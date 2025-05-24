@@ -1,13 +1,13 @@
 name: Panoptic
 version: ${project.version}
 main: eu.mikart.panoptic.PanopticPlugin
-api-version: '1.21.4'
+api-version: '1.21.1'
 dependencies:
   server:
     MiniPlaceholders:
-        load: AFTER
-        required: false
-        join-classpath: true
+      load: AFTER
+      required: false
+      join-classpath: true
     PlaceholderAPI:
       load: BEFORE
       required: false
