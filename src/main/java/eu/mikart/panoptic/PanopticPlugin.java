@@ -3,7 +3,7 @@ package eu.mikart.panoptic;
 import eu.mikart.panoptic.command.PanopticCommand;
 import eu.mikart.panoptic.config.ConfigProvider;
 import eu.mikart.panoptic.config.Settings;
-import eu.mikart.panoptic.config.event.BlockBreakSetting;
+import eu.mikart.panoptic.config.event.*;
 import eu.mikart.panoptic.listener.EventfulManager;
 import lombok.Getter;
 import lombok.Setter;
@@ -27,6 +27,18 @@ public class PanopticPlugin extends JavaPlugin implements ConfigProvider {
 
   @Setter
   private BlockBreakSetting blockBreakSetting;
+
+    @Setter
+    private BlockPlaceSetting blockPlaceSetting;
+
+    @Setter
+    private PlayerJoinSetting playerJoinSetting;
+
+    @Setter
+    private PlayerLeaveSetting playerLeaveSetting;
+
+    @Setter
+    private PlayerTeleportSetting playerTeleportSetting;
 
   private boolean placeholderAPIEnabled = false;
   private Version version;

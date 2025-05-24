@@ -8,9 +8,9 @@ import lombok.Getter;
 @Configuration
 @Getter
 @SuppressWarnings("FieldMayBeFinal")
-public class BlockBreakSetting extends EventSetting<EventSetting.EventData> {
+public class PlayerTeleportSetting extends EventSetting<EventSetting.EventData> {
 
-  public BlockBreakSetting() {
+  public PlayerTeleportSetting() {
     this.events = List.of(
       new EventData(
         List.of(),
@@ -19,3 +19,4 @@ public class BlockBreakSetting extends EventSetting<EventSetting.EventData> {
     );
   }
 }
+
