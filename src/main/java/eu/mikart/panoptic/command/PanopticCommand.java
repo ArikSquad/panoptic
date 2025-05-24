@@ -4,14 +4,14 @@ import eu.mikart.panoptic.PanopticPlugin;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextColor;
 import net.william278.desertwell.about.AboutMenu;
-import net.william278.uniform.CommandUser;
+import net.william278.uniform.BaseCommand;
 import net.william278.uniform.Permission;
-import net.william278.uniform.annotations.CommandNode;
-import net.william278.uniform.annotations.PermissionNode;
-import net.william278.uniform.annotations.Syntax;
+import org.bukkit.command.CommandSender;
+import org.jetbrains.annotations.NotNull;
 
-@CommandNode(value = "panoptic", permission = @PermissionNode(value = "panoptic.command.panoptic", defaultValue = Permission.Default.TRUE))
-public class PanopticCommand {
+import java.util.List;
+
+public class PanopticCommand extends PluginCommand {
 
     private final static AboutMenu aboutMenu;
 
@@ -27,9 +27,25 @@ public class PanopticCommand {
                 .build();
     }
 
-    @Syntax
-    public void execute(CommandUser user) {
-        user.getAudience().sendMessage(aboutMenu.toComponent());
+    protected PanopticCommand(@NotNull PanopticPlugin plugin) {
+        super("panoptic", List.of(), Permission.Default.TRUE, ExecutionScope.ALL, plugin);
     }
 
+    @Override
+    public void provide(@NotNull BaseCommand<?> command) {
+        command.setDefaultExecutor((context) -> {
+            final CommandSender sender = adapt(command.getUser(context.getSource()));
+            sender.sendMessage(aboutMenu.toComponent());
+        });
+
+        command.addSubCommand("reload", (sub) -> {
+            sub.setDefaultExecutor((context) -> {
+                final CommandSender sender = adapt(command.getUser(context.getSource()));
+                plugin.reload();
+                sender.sendMessage(Component.text("Panoptic has been reloaded!").color(TextColor.color(0x00ff00)));
+            });
+
+            sub.setPermission(new Permission(getPermission("reload"), Permission.Default.IF_OP));
+        });
+    }
 }

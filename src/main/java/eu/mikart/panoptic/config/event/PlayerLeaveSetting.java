@@ -3,6 +3,7 @@ package eu.mikart.panoptic.config.event;
 import java.util.List;
 
 import de.exlll.configlib.Configuration;
+import eu.mikart.panoptic.config.EventSetting;
 import lombok.Getter;
 
 @Configuration

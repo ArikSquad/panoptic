@@ -1,6 +1,7 @@
 package eu.mikart.panoptic.config.event;
 
 import de.exlll.configlib.Configuration;
+import eu.mikart.panoptic.config.EventSetting;
 import lombok.Getter;
 
 import java.util.List;

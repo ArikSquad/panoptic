@@ -1,6 +1,7 @@
 package eu.mikart.panoptic.listener;
 
 import eu.mikart.panoptic.PanopticPlugin;
+import eu.mikart.panoptic.config.EventSetting;
 import eu.mikart.panoptic.config.event.*;
 import eu.mikart.panoptic.event.Action;
 import eu.mikart.panoptic.event.Condition;
@@ -8,6 +9,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
@@ -23,37 +25,61 @@ import org.bukkit.event.player.*;
 import java.util.List;
 
 public class EventfulManager {
-    private final PanopticPlugin configProvider;
+    private final PanopticPlugin plugin;
 
-    public EventfulManager(PanopticPlugin configProvider) {
-        this.configProvider = configProvider;
+    public EventfulManager(PanopticPlugin plugin) {
+        this.plugin = plugin;
     }
 
     public void initialize() {
-        Bukkit.getPluginManager().registerEvents(new BlockBreakListener(), configProvider);
-        Bukkit.getPluginManager().registerEvents(new BlockPlaceListener(), configProvider);
-        Bukkit.getPluginManager().registerEvents(new PlayerTeleportListener(), configProvider);
-        Bukkit.getPluginManager().registerEvents(new PlayerJoinListener(), configProvider);
-        Bukkit.getPluginManager().registerEvents(new PlayerLeaveListener(), configProvider);
-        Bukkit.getPluginManager().registerEvents(new FishCatchListener(), configProvider);
-        Bukkit.getPluginManager().registerEvents(new FishingListener(), configProvider);
-        Bukkit.getPluginManager().registerEvents(new EntityKillListener(), configProvider);
-        Bukkit.getPluginManager().registerEvents(new FurnaceCookListener(), configProvider);
-        Bukkit.getPluginManager().registerEvents(new CraftListener(), configProvider);
-        Bukkit.getPluginManager().registerEvents(new MoveListener(), configProvider);
-        Bukkit.getPluginManager().registerEvents(new PlayerDeathListener(), configProvider);
-        Bukkit.getPluginManager().registerEvents(new PlayerDamageListener(), configProvider);
-        Bukkit.getPluginManager().registerEvents(new PlayerBedListener(), configProvider);
-        Bukkit.getPluginManager().registerEvents(new ItemConsumeListener(), configProvider);
-        Bukkit.getPluginManager().registerEvents(new ItemPickupListener(), configProvider);
-        Bukkit.getPluginManager().registerEvents(new EntityInteractListener(), configProvider);
-        Bukkit.getPluginManager().registerEvents(new ItemEnchantListener(), configProvider);
-        Bukkit.getPluginManager().registerEvents(new ItemRepairListener(), configProvider);
-        Bukkit.getPluginManager().registerEvents(new ItemDropListener(), configProvider);
+        if (plugin.getBlockBreakSetting().isListen())
+            Bukkit.getPluginManager().registerEvents(new BlockBreakListener(), plugin);
+        if (plugin.getBlockPlaceSetting().isListen())
+            Bukkit.getPluginManager().registerEvents(new BlockPlaceListener(), plugin);
+        if (plugin.getPlayerTeleportSetting().isListen())
+            Bukkit.getPluginManager().registerEvents(new PlayerTeleportListener(), plugin);
+        if (plugin.getPlayerJoinSetting().isListen())
+            Bukkit.getPluginManager().registerEvents(new PlayerJoinListener(), plugin);
+        if (plugin.getPlayerLeaveSetting().isListen())
+            Bukkit.getPluginManager().registerEvents(new PlayerLeaveListener(), plugin);
+        if (plugin.getFishCatchSetting().isListen())
+            Bukkit.getPluginManager().registerEvents(new FishCatchListener(), plugin);
+        if (plugin.getFishingSetting().isListen())
+            Bukkit.getPluginManager().registerEvents(new FishingListener(), plugin);
+        if (plugin.getEntityKillSetting().isListen())
+            Bukkit.getPluginManager().registerEvents(new EntityKillListener(), plugin);
+        if (plugin.getFurnaceCookSetting().isListen())
+            Bukkit.getPluginManager().registerEvents(new FurnaceCookListener(), plugin);
+        if (plugin.getCraftSetting().isListen())
+            Bukkit.getPluginManager().registerEvents(new CraftListener(), plugin);
+        if (plugin.getMoveSetting().isListen())
+            Bukkit.getPluginManager().registerEvents(new MoveListener(), plugin);
+        if (plugin.getPlayerDeathSetting().isListen())
+            Bukkit.getPluginManager().registerEvents(new PlayerDeathListener(), plugin);
+        if (plugin.getPlayerDamageSetting().isListen())
+            Bukkit.getPluginManager().registerEvents(new PlayerDamageListener(), plugin);
+        if (plugin.getPlayerSleepSetting().isListen())
+            Bukkit.getPluginManager().registerEvents(new PlayerBedListener(), plugin);
+        if (plugin.getItemConsumeSetting().isListen())
+            Bukkit.getPluginManager().registerEvents(new ItemConsumeListener(), plugin);
+        if (plugin.getItemPickupSetting().isListen())
+            Bukkit.getPluginManager().registerEvents(new ItemPickupListener(), plugin);
+        if (plugin.getEntityInteractSetting().isListen())
+            Bukkit.getPluginManager().registerEvents(new EntityInteractListener(), plugin);
+        if (plugin.getItemEnchantSetting().isListen())
+            Bukkit.getPluginManager().registerEvents(new ItemEnchantListener(), plugin);
+        if (plugin.getItemRepairSetting().isListen())
+            Bukkit.getPluginManager().registerEvents(new ItemRepairListener(), plugin);
+        if (plugin.getItemDropSetting().isListen())
+            Bukkit.getPluginManager().registerEvents(new ItemDropListener(), plugin);
+    }
+
+    public void unregisterAll() {
+        HandlerList.unregisterAll(plugin);
     }
 
     private EventSetting.EventData getBlockBreakInner() {
-        BlockBreakSetting setting = configProvider.getBlockBreakSetting();
+        BlockBreakSetting setting = plugin.getBlockBreakSetting();
         if (setting.getEvents() != null && !setting.getEvents().isEmpty()) {
             return setting.getEvents().getFirst();
         }
@@ -61,7 +87,7 @@ public class EventfulManager {
     }
 
     private EventSetting.EventData getBlockPlaceInner() {
-        BlockPlaceSetting setting = configProvider.getBlockPlaceSetting();
+        BlockPlaceSetting setting = plugin.getBlockPlaceSetting();
         if (setting.getEvents() != null && !setting.getEvents().isEmpty()) {
             return setting.getEvents().getFirst();
         }
@@ -69,7 +95,7 @@ public class EventfulManager {
     }
 
     private EventSetting.EventData getPlayerTeleportInner() {
-        PlayerTeleportSetting setting = configProvider.getPlayerTeleportSetting();
+        PlayerTeleportSetting setting = plugin.getPlayerTeleportSetting();
         if (setting.getEvents() != null && !setting.getEvents().isEmpty()) {
             return setting.getEvents().getFirst();
         }
@@ -77,7 +103,7 @@ public class EventfulManager {
     }
 
     private EventSetting.EventData getPlayerJoinInner() {
-        PlayerJoinSetting setting = configProvider.getPlayerJoinSetting();
+        PlayerJoinSetting setting = plugin.getPlayerJoinSetting();
         if (setting.getEvents() != null && !setting.getEvents().isEmpty()) {
             return setting.getEvents().getFirst();
         }
@@ -85,7 +111,7 @@ public class EventfulManager {
     }
 
     private EventSetting.EventData getPlayerLeaveInner() {
-        PlayerLeaveSetting setting = configProvider.getPlayerLeaveSetting();
+        PlayerLeaveSetting setting = plugin.getPlayerLeaveSetting();
         if (setting.getEvents() != null && !setting.getEvents().isEmpty()) {
             return setting.getEvents().getFirst();
         }
@@ -93,7 +119,7 @@ public class EventfulManager {
     }
 
     private EventSetting.EventData getFishCatchInner() {
-        FishCatchSetting setting = configProvider.getFishCatchSetting();
+        FishCatchSetting setting = plugin.getFishCatchSetting();
         if (setting.getEvents() != null && !setting.getEvents().isEmpty()) {
             return setting.getEvents().getFirst();
         }
@@ -101,7 +127,7 @@ public class EventfulManager {
     }
 
     private EventSetting.EventData getFishingInner() {
-        FishingSetting setting = configProvider.getFishingSetting();
+        FishingSetting setting = plugin.getFishingSetting();
         if (setting.getEvents() != null && !setting.getEvents().isEmpty()) {
             return setting.getEvents().getFirst();
         }
@@ -109,7 +135,7 @@ public class EventfulManager {
     }
 
     private EventSetting.EventData getEntityKillInner() {
-        EntityKillSetting setting = configProvider.getEntityKillSetting();
+        EntityKillSetting setting = plugin.getEntityKillSetting();
         if (setting.getEvents() != null && !setting.getEvents().isEmpty()) {
             return setting.getEvents().getFirst();
         }
@@ -117,7 +143,7 @@ public class EventfulManager {
     }
 
     private EventSetting.EventData getFurnaceCookInner() {
-        FurnaceCookSetting setting = configProvider.getFurnaceCookSetting();
+        FurnaceCookSetting setting = plugin.getFurnaceCookSetting();
         if (setting.getEvents() != null && !setting.getEvents().isEmpty()) {
             return setting.getEvents().getFirst();
         }
@@ -125,7 +151,7 @@ public class EventfulManager {
     }
 
     private EventSetting.EventData getCraftInner() {
-        CraftSetting setting = configProvider.getCraftSetting();
+        CraftSetting setting = plugin.getCraftSetting();
         if (setting.getEvents() != null && !setting.getEvents().isEmpty()) {
             return setting.getEvents().getFirst();
         }
@@ -133,7 +159,7 @@ public class EventfulManager {
     }
 
     private EventSetting.EventData getMoveInner() {
-        MoveSetting setting = configProvider.getMoveSetting();
+        MoveSetting setting = plugin.getMoveSetting();
         if (setting.getEvents() != null && !setting.getEvents().isEmpty()) {
             return setting.getEvents().getFirst();
         }
@@ -141,7 +167,7 @@ public class EventfulManager {
     }
 
     private EventSetting.EventData getPlayerDeathInner() {
-        PlayerDeathSetting setting = configProvider.getPlayerDeathSetting();
+        PlayerDeathSetting setting = plugin.getPlayerDeathSetting();
         if (setting.getEvents() != null && !setting.getEvents().isEmpty()) {
             return setting.getEvents().getFirst();
         }
@@ -149,7 +175,7 @@ public class EventfulManager {
     }
 
     private EventSetting.EventData getPlayerDamageInner() {
-        PlayerDamageSetting setting = configProvider.getPlayerDamageSetting();
+        PlayerDamageSetting setting = plugin.getPlayerDamageSetting();
         if (setting.getEvents() != null && !setting.getEvents().isEmpty()) {
             return setting.getEvents().getFirst();
         }
@@ -157,7 +183,7 @@ public class EventfulManager {
     }
 
     private EventSetting.EventData getPlayerBedInner() {
-        PlayerSleepSetting setting = configProvider.getPlayerSleepSetting();
+        PlayerSleepSetting setting = plugin.getPlayerSleepSetting();
         if (setting.getEvents() != null && !setting.getEvents().isEmpty()) {
             return setting.getEvents().getFirst();
         }
@@ -165,7 +191,7 @@ public class EventfulManager {
     }
 
     private EventSetting.EventData getItemConsumeInner() {
-        ItemConsumeSetting setting = configProvider.getItemConsumeSetting();
+        ItemConsumeSetting setting = plugin.getItemConsumeSetting();
         if (setting.getEvents() != null && !setting.getEvents().isEmpty()) {
             return setting.getEvents().getFirst();
         }
@@ -173,7 +199,7 @@ public class EventfulManager {
     }
 
     private EventSetting.EventData getItemPickupInner() {
-        ItemPickupSetting setting = configProvider.getItemPickupSetting();
+        ItemPickupSetting setting = plugin.getItemPickupSetting();
         if (setting.getEvents() != null && !setting.getEvents().isEmpty()) {
             return setting.getEvents().getFirst();
         }
@@ -181,7 +207,7 @@ public class EventfulManager {
     }
 
     private EventSetting.EventData getEntityInteractInner() {
-        EntityInteractSetting setting = configProvider.getEntityInteractSetting();
+        EntityInteractSetting setting = plugin.getEntityInteractSetting();
         if (setting.getEvents() != null && !setting.getEvents().isEmpty()) {
             return setting.getEvents().getFirst();
         }
@@ -189,7 +215,7 @@ public class EventfulManager {
     }
 
     private EventSetting.EventData getItemEnchantInner() {
-        ItemEnchantSetting setting = configProvider.getItemEnchantSetting();
+        ItemEnchantSetting setting = plugin.getItemEnchantSetting();
         if (setting.getEvents() != null && !setting.getEvents().isEmpty()) {
             return setting.getEvents().getFirst();
         }
@@ -197,7 +223,7 @@ public class EventfulManager {
     }
 
     private EventSetting.EventData getItemRepairInner() {
-        ItemRepairSetting setting = configProvider.getItemRepairSetting();
+        ItemRepairSetting setting = plugin.getItemRepairSetting();
         if (setting.getEvents() != null && !setting.getEvents().isEmpty()) {
             return setting.getEvents().getFirst();
         }
@@ -205,7 +231,7 @@ public class EventfulManager {
     }
 
     private EventSetting.EventData getItemDropInner() {
-        ItemDropSetting setting = configProvider.getItemDropSetting();
+        ItemDropSetting setting = plugin.getItemDropSetting();
         if (setting.getEvents() != null && !setting.getEvents().isEmpty()) {
             return setting.getEvents().getFirst();
         }

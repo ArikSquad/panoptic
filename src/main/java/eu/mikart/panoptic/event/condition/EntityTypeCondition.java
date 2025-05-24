@@ -2,6 +2,7 @@ package eu.mikart.panoptic.event.condition;
 
 import eu.mikart.panoptic.event.Condition;
 import org.bukkit.event.Event;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
 
 public class EntityTypeCondition implements Condition {
@@ -13,10 +14,13 @@ public class EntityTypeCondition implements Condition {
 
     @Override
     public boolean evaluate(Event event) {
-        if (!(event instanceof EntityDeathEvent)) {
+        if (event instanceof EntityDamageByEntityEvent damageByEntityEvent) {
+            return damageByEntityEvent.getDamager().getType().name().equalsIgnoreCase(entityType);
+        }
+        if (!(event instanceof EntityDeathEvent deathEvent)) {
             return true;
         }
-        return ((EntityDeathEvent) event).getEntity().getType().name().equalsIgnoreCase(entityType);
+        return deathEvent.getEntity().getType().name().equalsIgnoreCase(entityType);
     }
 }
 

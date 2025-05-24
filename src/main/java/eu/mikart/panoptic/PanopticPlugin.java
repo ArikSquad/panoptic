@@ -1,6 +1,6 @@
 package eu.mikart.panoptic;
 
-import eu.mikart.panoptic.command.PanopticCommand;
+import eu.mikart.panoptic.command.PluginCommand;
 import eu.mikart.panoptic.config.ConfigProvider;
 import eu.mikart.panoptic.config.Settings;
 import eu.mikart.panoptic.config.event.*;
@@ -86,6 +86,7 @@ public class PanopticPlugin extends JavaPlugin implements ConfigProvider {
 
     private boolean placeholderAPIEnabled = false;
     private boolean miniPlaceholdersEnabled = false;
+    private EventfulManager eventfulManager;
     private Version version;
 
     @Override
@@ -103,15 +104,24 @@ public class PanopticPlugin extends JavaPlugin implements ConfigProvider {
             miniPlaceholdersEnabled = true;
         }
 
-        new EventfulManager(this).initialize();
+        eventfulManager = new EventfulManager(this);
+        eventfulManager.initialize();
         PaperUniform uniform = PaperUniform.getInstance(this);
-        uniform.register(new PanopticCommand());
+        uniform.register(PluginCommand.Type.create(this));
     }
 
     @Override
     public void onDisable() {
         instance = null;
         getLogger().info("Panoptic plugin has been disabled.");
+    }
+
+    public void reload() {
+        getLogger().info("Reloading Panoptic plugin...");
+        loadConfig();
+        eventfulManager.unregisterAll();
+        eventfulManager.initialize();
+        getLogger().info("Panoptic plugin has been reloaded.");
     }
 
     @Override
