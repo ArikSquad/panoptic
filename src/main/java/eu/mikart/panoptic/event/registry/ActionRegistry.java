@@ -2,9 +2,7 @@ package eu.mikart.panoptic.event.registry;
 
 import eu.mikart.panoptic.event.Action;
 import eu.mikart.panoptic.event.ActionData;
-import eu.mikart.panoptic.event.action.CancelAction;
-import eu.mikart.panoptic.event.action.RunCommandAsConsoleAction;
-import eu.mikart.panoptic.event.action.RunCommandAsPlayerAction;
+import eu.mikart.panoptic.event.action.*;
 import eu.mikart.panoptic.event.action.value.StringActionValue;
 
 import java.util.HashMap;
@@ -18,6 +16,9 @@ public class ActionRegistry {
         register("cancel", data -> new CancelAction());
         register("run_command_as_player", data -> new RunCommandAsPlayerAction(((StringActionValue) data.value()).value()));
         register("run_command_as_console", data -> new RunCommandAsConsoleAction(((StringActionValue) data.value()).value()));
+        register("send_message", data -> new SendMessageAction(((StringActionValue) data.value()).value()));
+        register("placeholder_message", data -> new PlaceholderMessageAction(((StringActionValue) data.value()).value()));
+        register("miniplaceholder_message", data -> new MiniPlaceholderMessageAction(((StringActionValue) data.value()).value()));
     }
 
     public static void register(String type, Function<ActionData, Action> factory) {

@@ -26,6 +26,7 @@ public class ActionContextParser {
             }
             return "";
         });
+        PLACEHOLDER_MAP.put("%event_name%", (player, event) -> event != null ? event.getEventName() : "");
     }
 
     public static String parse(String input, Player player, Event event) {
