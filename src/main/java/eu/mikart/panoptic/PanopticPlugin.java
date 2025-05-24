@@ -39,6 +39,51 @@ public class PanopticPlugin extends JavaPlugin implements ConfigProvider {
     @Setter
     private PlayerTeleportSetting playerTeleportSetting;
 
+    @Setter
+    private FishCatchSetting fishCatchSetting;
+
+    @Setter
+    private FishingSetting fishingSetting;
+
+    @Setter
+    private EntityKillSetting entityKillSetting;
+
+    @Setter
+    private FurnaceCookSetting furnaceCookSetting;
+
+    @Setter
+    private CraftSetting craftSetting;
+
+    @Setter
+    private MoveSetting moveSetting;
+
+    @Setter
+    private PlayerDeathSetting playerDeathSetting;
+
+    @Setter
+    private PlayerDamageSetting playerDamageSetting;
+
+    @Setter
+    private PlayerSleepSetting playerSleepSetting;
+
+    @Setter
+    private ItemConsumeSetting itemConsumeSetting;
+
+    @Setter
+    private ItemPickupSetting itemPickupSetting;
+
+    @Setter
+    private EntityInteractSetting entityInteractSetting;
+
+    @Setter
+    private ItemEnchantSetting itemEnchantSetting;
+
+    @Setter
+    private ItemRepairSetting itemRepairSetting;
+
+    @Setter
+    private ItemDropSetting itemDropSetting;
+
     private boolean placeholderAPIEnabled = false;
     private boolean miniPlaceholdersEnabled = false;
     private Version version;
