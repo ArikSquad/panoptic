@@ -2,3 +2,9 @@ name: Panoptic
 version: ${project.version}
 main: eu.mikart.panoptic.PanopticPlugin
 api-version: '1.21.4'
+dependencies:
+  server:
+    PlaceholderAPI:
+      load: BEFORE
+      required: false
+      join-classpath: true
