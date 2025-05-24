@@ -4,7 +4,6 @@ import eu.mikart.panoptic.event.Condition;
 import eu.mikart.panoptic.event.PlaceholderContextParser;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
-import org.bukkit.event.player.PlayerEvent;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -48,8 +47,9 @@ public class PlaceholderCondition implements Condition {
 
     @Override
     public boolean evaluate(Event event) {
-        if (!(event instanceof PlayerEvent playerEvent)) return false;
-        Player player = playerEvent.getPlayer();
+        Player player = ripPlayerOffEvent(event);
+        if (player == null) return false;
+        
         String parsed = PlaceholderContextParser.parse(expression, player);
         Matcher matcher = EXPRESSION_PATTERN.matcher(parsed);
         if (!matcher.matches()) return false;

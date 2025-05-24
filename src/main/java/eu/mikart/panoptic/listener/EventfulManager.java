@@ -72,6 +72,8 @@ public class EventfulManager {
             Bukkit.getPluginManager().registerEvents(new ItemRepairListener(), plugin);
         if (plugin.getItemDropSetting().isListen())
             Bukkit.getPluginManager().registerEvents(new ItemDropListener(), plugin);
+
+        plugin.getLogger().info("EventfulManager initialized and listeners registered.");
     }
 
     public void unregisterAll() {
