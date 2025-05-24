@@ -2,6 +2,7 @@ package eu.mikart.panoptic.event.registry;
 
 import eu.mikart.panoptic.event.Condition;
 import eu.mikart.panoptic.event.ConditionData;
+import eu.mikart.panoptic.event.condition.MiniPlaceholderCondition;
 import eu.mikart.panoptic.event.condition.PlaceholderCondition;
 import eu.mikart.panoptic.event.condition.SneakingCondition;
 import eu.mikart.panoptic.event.condition.params.StringConditionParams;
@@ -16,6 +17,7 @@ public class ConditionRegistry {
     static {
         register("sneaking", data -> new SneakingCondition());
         register("placeholder", data -> new PlaceholderCondition(((StringConditionParams) data.params()).value()));
+        register("miniplaceholder", data -> new MiniPlaceholderCondition(((StringConditionParams) data.params()).value()));
     }
 
     public static void register(String type, Function<ConditionData, Condition> factory) {

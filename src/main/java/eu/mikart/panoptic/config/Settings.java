@@ -17,5 +17,6 @@ public class Settings {
 
   private boolean debug = false;
   private boolean usePlaceholderAPI = true;
+  private boolean useMiniPlaceholders = true;
 
 }

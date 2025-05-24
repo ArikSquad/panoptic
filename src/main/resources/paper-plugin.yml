@@ -4,6 +4,10 @@ main: eu.mikart.panoptic.PanopticPlugin
 api-version: '1.21.4'
 dependencies:
   server:
+    MiniPlaceholders:
+        load: AFTER
+        required: false
+        join-classpath: true
     PlaceholderAPI:
       load: BEFORE
       required: false

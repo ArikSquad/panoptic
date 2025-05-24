@@ -1,7 +1,7 @@
 package eu.mikart.panoptic.event.condition;
 
 import eu.mikart.panoptic.event.Condition;
-import eu.mikart.panoptic.event.PlaceholderContextParser;
+import eu.mikart.panoptic.event.MiniPlaceholderContextParser;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.event.player.PlayerEvent;
@@ -9,12 +9,12 @@ import org.bukkit.event.player.PlayerEvent;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class PlaceholderCondition implements Condition {
+public class MiniPlaceholderCondition implements Condition {
     private static final Pattern EXPRESSION_PATTERN = Pattern.compile(
             "(.+?)(>=|<=|!=|=|>|<)(.+)");
     private final String expression;
 
-    public PlaceholderCondition(String expression) {
+    public MiniPlaceholderCondition(String expression) {
         this.expression = expression;
     }
 
@@ -50,7 +50,7 @@ public class PlaceholderCondition implements Condition {
     public boolean evaluate(Event event) {
         if (!(event instanceof PlayerEvent playerEvent)) return false;
         Player player = playerEvent.getPlayer();
-        String parsed = PlaceholderContextParser.parse(expression, player);
+        String parsed = MiniPlaceholderContextParser.parse(expression, player);
         Matcher matcher = EXPRESSION_PATTERN.matcher(parsed);
         if (!matcher.matches()) return false;
         String left = matcher.group(1).trim();
