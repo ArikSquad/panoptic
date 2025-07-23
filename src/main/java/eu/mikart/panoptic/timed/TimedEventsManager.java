@@ -1,6 +1,5 @@
 package eu.mikart.panoptic.timed;
 
-import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -26,14 +25,13 @@ public class TimedEventsManager {
     private final PanopticPlugin plugin;
     private final Map<String, BukkitTask> runningTasks = new ConcurrentHashMap<>();
     private final Map<String, TimedEvent> events = new HashMap<>();
+    private final CronScheduler cronScheduler;
     
     public TimedEventsManager(PanopticPlugin plugin) {
         this.plugin = plugin;
+        this.cronScheduler = new CronScheduler(plugin);
     }
     
-    /**
-     * Initialize and start all enabled timed events
-     */
     public void initialize() {
         if (!plugin.getSettings().isTimedEvents()) {
             plugin.getLogger().info("Timed events are disabled in config.yml");
@@ -56,13 +54,17 @@ public class TimedEventsManager {
             }
         }
         
+        boolean hasCronEvents = events.values().stream()
+            .anyMatch(event -> event.getScheduleType() == TimedEvent.ScheduleType.CRON);
+        if (hasCronEvents) {
+            cronScheduler.start();
+        }
+        
         plugin.getLogger().info("TimedEventsManager initialized with " + enabledCount + " enabled events.");
     }
     
-    /**
-     * Stop all running timed events and clear the manager
-     */
     public void shutdown() {
+        cronScheduler.stop();
         runningTasks.values().forEach(BukkitTask::cancel);
         runningTasks.clear();
         events.clear();
@@ -119,20 +121,27 @@ public class TimedEventsManager {
     }
     
     /**
-     * Schedule a cron-based event (simplified implementation)
-     * Note: This is a basic implementation. For full cron support, you'd need a library like Quartz.
+     * Schedule a cron-based event using the advanced CronScheduler
      */
     private void scheduleCronEvent(TimedEvent event) {
-        // For now, we'll implement a simple daily check every minute
-        // A full implementation would require a cron parsing library
-        BukkitTask task = Bukkit.getScheduler().runTaskTimer(plugin, 
-            () -> checkCronExpression(event), 
-            1200L, // Check every minute (1200 ticks)
-            1200L
-        );
+        // Validate the cron expression first
+        if (!CronParser.isValid(event.getSchedule())) {
+            plugin.getLogger().warning("Invalid cron expression for event '" + event.getName() + "': " + event.getSchedule());
+            return;
+        }
         
-        runningTasks.put(event.getName(), task);
-        plugin.getLogger().info("Scheduled cron event '" + event.getName() + "' with expression: " + event.getSchedule());
+        cronScheduler.addCronJob(event);
+        
+        // Add a dummy task to track the event as "running"
+        BukkitTask dummyTask = Bukkit.getScheduler().runTaskTimer(plugin, () -> {
+            // This task does nothing - it's just for tracking purposes
+        }, Long.MAX_VALUE, Long.MAX_VALUE);
+        
+        runningTasks.put(event.getName(), dummyTask);
+        
+        String description = CronParser.describe(event.getSchedule());
+        plugin.getLogger().info("Scheduled cron event '" + event.getName() + "': " + description + 
+                               " (" + event.getSchedule() + ")");
     }
     
     /**
@@ -159,35 +168,6 @@ public class TimedEventsManager {
             
         } catch (NumberFormatException e) {
             plugin.getLogger().warning("Invalid delay format for event " + event.getName() + ": " + event.getSchedule());
-        }
-    }
-    
-    /**
-     * Basic cron expression checking (simplified implementation)
-     * This is a minimal implementation - for production use, consider using a proper cron library
-     */
-    private void checkCronExpression(TimedEvent event) {
-        String cronExpression = event.getSchedule();
-        
-        // Basic cron parsing: minute hour day month dayOfWeek
-        String[] parts = cronExpression.split("\\s+");
-        if (parts.length != 5) {
-            return; // Invalid cron expression
-        }
-        
-        LocalDateTime now = LocalDateTime.now();
-        
-        try {
-            // Simple check for "0 0 * * *" (daily at midnight)
-            if ("0".equals(parts[0]) && "0".equals(parts[1]) && "*".equals(parts[2]) && "*".equals(parts[3]) && "*".equals(parts[4])) {
-                if (now.getHour() == 0 && now.getMinute() == 0) {
-                    executeCommands(event);
-                }
-            }
-            // Add more cron patterns as needed
-            
-        } catch (Exception e) {
-            plugin.getLogger().log(Level.WARNING, "Error checking cron expression for event " + event.getName(), e);
         }
     }
     
@@ -228,14 +208,21 @@ public class TimedEventsManager {
      */
     public Map<String, String> getEventInfo() {
         Map<String, String> info = new HashMap<>();
+    
         for (Map.Entry<String, TimedEvent> entry : events.entrySet()) {
             String name = entry.getKey();
             TimedEvent event = entry.getValue();
             BukkitTask task = runningTasks.get(name);
             
             String status = task != null && !task.isCancelled() ? "Running" : "Stopped";
-            info.put(name, status + " (" + event.getScheduleType() + ": " + event.getSchedule() + ")");
+            if (event.getScheduleType() == TimedEvent.ScheduleType.CRON) {
+                String description = CronParser.describe(event.getSchedule());
+                info.put(name, status + " - " + description + " (" + event.getSchedule() + ")");
+            } else {
+                info.put(name, status + " (" + event.getScheduleType() + ": " + event.getSchedule() + ")");
+            }
         }
+        
         return info;
     }
     
@@ -249,7 +236,14 @@ public class TimedEventsManager {
         }
         
         plugin.getLogger().info("Manually triggering timed event: " + eventName);
-        executeCommands(event);
-        return true;
+        
+        // For cron events, use the cron scheduler's trigger method
+        if (event.getScheduleType() == TimedEvent.ScheduleType.CRON) {
+            return cronScheduler.triggerCronJob(eventName);
+        } else {
+            // For other events, execute directly
+            executeCommands(event);
+            return true;
+        }
     }
 }

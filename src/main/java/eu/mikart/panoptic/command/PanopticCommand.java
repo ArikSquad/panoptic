@@ -1,15 +1,16 @@
 package eu.mikart.panoptic.command;
 
+import java.util.List;
+
+import org.bukkit.command.CommandSender;
+import org.jetbrains.annotations.NotNull;
+
 import eu.mikart.panoptic.PanopticPlugin;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextColor;
 import net.william278.desertwell.about.AboutMenu;
 import net.william278.uniform.BaseCommand;
 import net.william278.uniform.Permission;
-import org.bukkit.command.CommandSender;
-import org.jetbrains.annotations.NotNull;
-
-import java.util.List;
 
 public class PanopticCommand extends PluginCommand {
 
