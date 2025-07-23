@@ -1,20 +1,41 @@
 package eu.mikart.panoptic.config;
 
+import java.awt.Color;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
+import java.util.logging.Level;
+
+import org.jetbrains.annotations.NotNull;
+
 import de.exlll.configlib.ConfigurationElementFilter;
 import de.exlll.configlib.NameFormatters;
 import de.exlll.configlib.YamlConfigurationProperties;
 import de.exlll.configlib.YamlConfigurations;
 import eu.mikart.panoptic.PanopticPlugin;
-import eu.mikart.panoptic.config.event.*;
+import eu.mikart.panoptic.config.event.BlockBreakSetting;
+import eu.mikart.panoptic.config.event.BlockPlaceSetting;
+import eu.mikart.panoptic.config.event.CraftSetting;
+import eu.mikart.panoptic.config.event.EntityInteractSetting;
+import eu.mikart.panoptic.config.event.EntityKillSetting;
+import eu.mikart.panoptic.config.event.FishCatchSetting;
+import eu.mikart.panoptic.config.event.FishingSetting;
+import eu.mikart.panoptic.config.event.FurnaceCookSetting;
+import eu.mikart.panoptic.config.event.ItemConsumeSetting;
+import eu.mikart.panoptic.config.event.ItemDropSetting;
+import eu.mikart.panoptic.config.event.ItemEnchantSetting;
+import eu.mikart.panoptic.config.event.ItemPickupSetting;
+import eu.mikart.panoptic.config.event.ItemRepairSetting;
+import eu.mikart.panoptic.config.event.MoveSetting;
+import eu.mikart.panoptic.config.event.PlayerDamageSetting;
+import eu.mikart.panoptic.config.event.PlayerDeathSetting;
+import eu.mikart.panoptic.config.event.PlayerJoinSetting;
+import eu.mikart.panoptic.config.event.PlayerLeaveSetting;
+import eu.mikart.panoptic.config.event.PlayerSleepSetting;
+import eu.mikart.panoptic.config.event.PlayerTeleportSetting;
+import eu.mikart.panoptic.config.timed.TimedEventsConfig;
 import eu.mikart.panoptic.event.action.value.ActionValue;
 import eu.mikart.panoptic.event.condition.params.ConditionParams;
-import org.jetbrains.annotations.NotNull;
-
-import java.awt.*;
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Path;
-import java.util.logging.Level;
 
 public interface ConfigProvider {
 
@@ -30,6 +51,7 @@ public interface ConfigProvider {
     default void loadConfig() {
         loadSettings();
         loadEventSetting();
+        loadTimedEventsConfig();
     }
 
     @NotNull
@@ -137,6 +159,11 @@ public interface ConfigProvider {
 
     void setItemDropSetting(@NotNull ItemDropSetting setting);
 
+    @NotNull
+    TimedEventsConfig getTimedEventsConfig();
+
+    void setTimedEventsConfig(@NotNull TimedEventsConfig config);
+
     default void loadSettings() {
         setSettings(YamlConfigurations.update(
                 getConfigDirectory().resolve("config.yml"),
@@ -165,6 +192,15 @@ public interface ConfigProvider {
         loadEventConfig("events/item_enchant.yml", ItemEnchantSetting.class, this::setItemEnchantSetting);
         loadEventConfig("events/item_repair.yml", ItemRepairSetting.class, this::setItemRepairSetting);
         loadEventConfig("events/item_drop.yml", ItemDropSetting.class, this::setItemDropSetting);
+    }
+
+    default void loadTimedEventsConfig() {
+        if (getSettings().isTimedEvents()) {
+            setTimedEventsConfig(YamlConfigurations.update(
+                    getConfigDirectory().resolve("timed.yml"),
+                    TimedEventsConfig.class,
+                    YAML_CONFIGURATION_PROPERTIES.header(TimedEventsConfig.CONFIG_HEADER).build()));
+        }
     }
 
     /**

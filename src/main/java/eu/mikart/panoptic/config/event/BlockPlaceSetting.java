@@ -15,4 +15,5 @@ public class BlockPlaceSetting extends EventSetting<EventSetting.EventData> {
   @Comment("If true, the event will be listened to. If false, it will not be listened to.")
   protected boolean listen = false;
   protected List<EventData> events;
+
 }

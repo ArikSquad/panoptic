@@ -1,19 +1,41 @@
 package eu.mikart.panoptic;
 
-import eu.mikart.panoptic.command.PluginCommand;
-import eu.mikart.panoptic.config.ConfigProvider;
-import eu.mikart.panoptic.config.Settings;
-import eu.mikart.panoptic.config.event.*;
-import eu.mikart.panoptic.listener.EventfulManager;
-import lombok.Getter;
-import lombok.Setter;
-import net.william278.desertwell.util.Version;
-import net.william278.uniform.paper.PaperUniform;
+import java.nio.file.Path;
+
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 
-import java.nio.file.Path;
+import eu.mikart.panoptic.command.PluginCommand;
+import eu.mikart.panoptic.config.ConfigProvider;
+import eu.mikart.panoptic.config.Settings;
+import eu.mikart.panoptic.config.event.BlockBreakSetting;
+import eu.mikart.panoptic.config.event.BlockPlaceSetting;
+import eu.mikart.panoptic.config.event.CraftSetting;
+import eu.mikart.panoptic.config.event.EntityInteractSetting;
+import eu.mikart.panoptic.config.event.EntityKillSetting;
+import eu.mikart.panoptic.config.event.FishCatchSetting;
+import eu.mikart.panoptic.config.event.FishingSetting;
+import eu.mikart.panoptic.config.event.FurnaceCookSetting;
+import eu.mikart.panoptic.config.event.ItemConsumeSetting;
+import eu.mikart.panoptic.config.event.ItemDropSetting;
+import eu.mikart.panoptic.config.event.ItemEnchantSetting;
+import eu.mikart.panoptic.config.event.ItemPickupSetting;
+import eu.mikart.panoptic.config.event.ItemRepairSetting;
+import eu.mikart.panoptic.config.event.MoveSetting;
+import eu.mikart.panoptic.config.event.PlayerDamageSetting;
+import eu.mikart.panoptic.config.event.PlayerDeathSetting;
+import eu.mikart.panoptic.config.event.PlayerJoinSetting;
+import eu.mikart.panoptic.config.event.PlayerLeaveSetting;
+import eu.mikart.panoptic.config.event.PlayerSleepSetting;
+import eu.mikart.panoptic.config.event.PlayerTeleportSetting;
+import eu.mikart.panoptic.config.timed.TimedEventsConfig;
+import eu.mikart.panoptic.listener.EventfulManager;
+import eu.mikart.panoptic.timed.TimedEventsManager;
+import lombok.Getter;
+import lombok.Setter;
+import net.william278.desertwell.util.Version;
+import net.william278.uniform.paper.PaperUniform;
 
 @Getter
 public class PanopticPlugin extends JavaPlugin implements ConfigProvider {
@@ -84,9 +106,13 @@ public class PanopticPlugin extends JavaPlugin implements ConfigProvider {
     @Setter
     private ItemDropSetting itemDropSetting;
 
+    @Setter
+    private TimedEventsConfig timedEventsConfig;
+
     private boolean placeholderAPIEnabled = false;
     private boolean miniPlaceholdersEnabled = false;
     private EventfulManager eventfulManager;
+    private TimedEventsManager timedEventsManager;
     private Version version;
 
     @Override
@@ -106,12 +132,21 @@ public class PanopticPlugin extends JavaPlugin implements ConfigProvider {
 
         eventfulManager = new EventfulManager(this);
         eventfulManager.initialize();
+        
+        if (getSettings().isTimedEvents()) {
+            timedEventsManager = new TimedEventsManager(this);
+            timedEventsManager.initialize();
+        }
+        
         PaperUniform uniform = PaperUniform.getInstance(this);
         uniform.register(PluginCommand.Type.create(this));
     }
 
     @Override
     public void onDisable() {
+        if (timedEventsManager != null) {
+            timedEventsManager.shutdown();
+        }
         instance = null;
         getLogger().info("Panoptic plugin has been disabled.");
     }
@@ -121,6 +156,18 @@ public class PanopticPlugin extends JavaPlugin implements ConfigProvider {
         loadConfig();
         eventfulManager.unregisterAll();
         eventfulManager.initialize();
+        
+        // Reload timed events manager
+        if (timedEventsManager != null) {
+            timedEventsManager.shutdown();
+            timedEventsManager = null;
+        }
+        
+        if (getSettings().isTimedEvents()) {
+            timedEventsManager = new TimedEventsManager(this);
+            timedEventsManager.initialize();
+        }
+        
         getLogger().info("Panoptic plugin has been reloaded.");
     }
 

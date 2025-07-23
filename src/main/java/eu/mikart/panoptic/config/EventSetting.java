@@ -1,18 +1,19 @@
 package eu.mikart.panoptic.config;
 
+import java.util.List;
+
 import eu.mikart.panoptic.event.Action;
 import eu.mikart.panoptic.event.ActionData;
 import eu.mikart.panoptic.event.Condition;
 import eu.mikart.panoptic.event.ConditionData;
 import lombok.Getter;
 
-import java.util.List;
-
 @Getter
 public abstract class EventSetting<T extends EventSetting.EventData> {
     public record EventData(
             List<ConditionData> conditions,
-            List<ActionData> actions) {
+            List<ActionData> actions,
+            ConditionEvaluationMode conditionEvaluationMode) {
 
         public List<Condition> resolveConditions() {
             return conditions == null ? List.of() :
@@ -26,6 +27,14 @@ public abstract class EventSetting<T extends EventSetting.EventData> {
                     actions.stream()
                             .map(eu.mikart.panoptic.event.registry.ActionRegistry::create)
                             .toList();
+        }
+        
+        /**
+         * Gets the condition evaluation mode, defaulting to REQUIRE_ALL if not specified.
+         * @return The condition evaluation mode to use
+         */
+        public ConditionEvaluationMode getConditionEvaluationMode() {
+            return conditionEvaluationMode != null ? conditionEvaluationMode : ConditionEvaluationMode.REQUIRE_ALL;
         }
     }
 }

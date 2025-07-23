@@ -1,10 +1,7 @@
 package eu.mikart.panoptic.listener;
 
-import eu.mikart.panoptic.PanopticPlugin;
-import eu.mikart.panoptic.config.EventSetting;
-import eu.mikart.panoptic.config.event.*;
-import eu.mikart.panoptic.event.Action;
-import eu.mikart.panoptic.event.Condition;
+import java.util.List;
+
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
@@ -20,9 +17,43 @@ import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.inventory.CraftItemEvent;
 import org.bukkit.event.inventory.FurnaceExtractEvent;
 import org.bukkit.event.inventory.PrepareAnvilEvent;
-import org.bukkit.event.player.*;
+import org.bukkit.event.player.PlayerAttemptPickupItemEvent;
+import org.bukkit.event.player.PlayerBedEnterEvent;
+import org.bukkit.event.player.PlayerBedLeaveEvent;
+import org.bukkit.event.player.PlayerDropItemEvent;
+import org.bukkit.event.player.PlayerFishEvent;
+import org.bukkit.event.player.PlayerInteractEntityEvent;
+import org.bukkit.event.player.PlayerItemConsumeEvent;
+import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerMoveEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.event.player.PlayerTeleportEvent;
 
-import java.util.List;
+import eu.mikart.panoptic.PanopticPlugin;
+import eu.mikart.panoptic.config.ConditionEvaluationMode;
+import eu.mikart.panoptic.config.EventSetting;
+import eu.mikart.panoptic.config.event.BlockBreakSetting;
+import eu.mikart.panoptic.config.event.BlockPlaceSetting;
+import eu.mikart.panoptic.config.event.CraftSetting;
+import eu.mikart.panoptic.config.event.EntityInteractSetting;
+import eu.mikart.panoptic.config.event.EntityKillSetting;
+import eu.mikart.panoptic.config.event.FishCatchSetting;
+import eu.mikart.panoptic.config.event.FishingSetting;
+import eu.mikart.panoptic.config.event.FurnaceCookSetting;
+import eu.mikart.panoptic.config.event.ItemConsumeSetting;
+import eu.mikart.panoptic.config.event.ItemDropSetting;
+import eu.mikart.panoptic.config.event.ItemEnchantSetting;
+import eu.mikart.panoptic.config.event.ItemPickupSetting;
+import eu.mikart.panoptic.config.event.ItemRepairSetting;
+import eu.mikart.panoptic.config.event.MoveSetting;
+import eu.mikart.panoptic.config.event.PlayerDamageSetting;
+import eu.mikart.panoptic.config.event.PlayerDeathSetting;
+import eu.mikart.panoptic.config.event.PlayerJoinSetting;
+import eu.mikart.panoptic.config.event.PlayerLeaveSetting;
+import eu.mikart.panoptic.config.event.PlayerSleepSetting;
+import eu.mikart.panoptic.config.event.PlayerTeleportSetting;
+import eu.mikart.panoptic.event.Action;
+import eu.mikart.panoptic.event.Condition;
 
 public class EventfulManager {
     private final PanopticPlugin plugin;
@@ -240,11 +271,32 @@ public class EventfulManager {
         return null;
     }
 
-    public void handleEvent(Event event, List<Condition> conditions, List<Action> actions) {
-        boolean allConditionsMet = conditions.stream().allMatch(cond -> cond.evaluate(event));
-        if (allConditionsMet) {
+    public void handleEvent(Event event, List<Condition> conditions, List<Action> actions, ConditionEvaluationMode evaluationMode) {
+        boolean conditionsMet = evaluateConditions(conditions, event, evaluationMode);
+        if (conditionsMet) {
             actions.forEach(action -> action.execute(event));
         }
+    }
+
+    /**
+     * Evaluates a list of conditions based on the specified evaluation mode.
+     * 
+     * @param conditions The list of conditions to evaluate
+     * @param event The event context for condition evaluation
+     * @param evaluationMode The mode determining how conditions should be evaluated
+     * @return true if conditions are met according to the evaluation mode, false otherwise
+     */
+    private boolean evaluateConditions(List<Condition> conditions, Event event, ConditionEvaluationMode evaluationMode) {
+        if (conditions == null || conditions.isEmpty()) {
+            return true; // No conditions means always execute
+        }
+        
+        return switch (evaluationMode) {
+            case REQUIRE_ALL -> conditions.stream().allMatch(cond -> cond.evaluate(event));
+            case REQUIRE_ANY -> conditions.stream().anyMatch(cond -> cond.evaluate(event));
+            case REQUIRE_SINGLE -> conditions.stream().mapToLong(cond -> cond.evaluate(event) ? 1 : 0).sum() == 1;
+            case IGNORE_CONDITIONS -> true;
+        };
     }
 
     private class BlockBreakListener implements Listener {
@@ -252,7 +304,7 @@ public class EventfulManager {
         public void onBlockBreak(BlockBreakEvent event) {
             EventSetting.EventData eventData = getBlockBreakInner();
             if (eventData != null) {
-                handleEvent(event, eventData.resolveConditions(), eventData.resolveActions());
+                handleEvent(event, eventData.resolveConditions(), eventData.resolveActions(), eventData.getConditionEvaluationMode());
             }
         }
     }
@@ -262,7 +314,7 @@ public class EventfulManager {
         public void onBlockPlace(BlockPlaceEvent event) {
             EventSetting.EventData eventData = getBlockPlaceInner();
             if (eventData != null) {
-                handleEvent(event, eventData.resolveConditions(), eventData.resolveActions());
+                handleEvent(event, eventData.resolveConditions(), eventData.resolveActions(), eventData.getConditionEvaluationMode());
             }
         }
     }
@@ -272,7 +324,7 @@ public class EventfulManager {
         public void onPlayerTeleport(PlayerTeleportEvent event) {
             EventSetting.EventData eventData = getPlayerTeleportInner();
             if (eventData != null) {
-                handleEvent(event, eventData.resolveConditions(), eventData.resolveActions());
+                handleEvent(event, eventData.resolveConditions(), eventData.resolveActions(), eventData.getConditionEvaluationMode());
             }
         }
     }
@@ -282,7 +334,7 @@ public class EventfulManager {
         public void onPlayerJoin(PlayerJoinEvent event) {
             EventSetting.EventData eventData = getPlayerJoinInner();
             if (eventData != null) {
-                handleEvent(event, eventData.resolveConditions(), eventData.resolveActions());
+                handleEvent(event, eventData.resolveConditions(), eventData.resolveActions(), eventData.getConditionEvaluationMode());
             }
         }
     }
@@ -292,7 +344,7 @@ public class EventfulManager {
         public void onPlayerLeave(PlayerQuitEvent event) {
             EventSetting.EventData eventData = getPlayerLeaveInner();
             if (eventData != null) {
-                handleEvent(event, eventData.resolveConditions(), eventData.resolveActions());
+                handleEvent(event, eventData.resolveConditions(), eventData.resolveActions(), eventData.getConditionEvaluationMode());
             }
         }
     }
@@ -302,7 +354,7 @@ public class EventfulManager {
         public void onFishCatch(PlayerFishEvent event) {
             EventSetting.EventData eventData = getFishCatchInner();
             if (eventData != null) {
-                handleEvent(event, eventData.resolveConditions(), eventData.resolveActions());
+                handleEvent(event, eventData.resolveConditions(), eventData.resolveActions(), eventData.getConditionEvaluationMode());
             }
         }
     }
@@ -312,7 +364,7 @@ public class EventfulManager {
         public void onFishing(PlayerFishEvent event) {
             EventSetting.EventData eventData = getFishingInner();
             if (eventData != null) {
-                handleEvent(event, eventData.resolveConditions(), eventData.resolveActions());
+                handleEvent(event, eventData.resolveConditions(), eventData.resolveActions(), eventData.getConditionEvaluationMode());
             }
         }
     }
@@ -322,7 +374,7 @@ public class EventfulManager {
         public void onMobKill(EntityDeathEvent event) {
             EventSetting.EventData eventData = getEntityKillInner();
             if (eventData != null) {
-                handleEvent(event, eventData.resolveConditions(), eventData.resolveActions());
+                handleEvent(event, eventData.resolveConditions(), eventData.resolveActions(), eventData.getConditionEvaluationMode());
             }
         }
     }
@@ -332,7 +384,7 @@ public class EventfulManager {
         public void onFurnaceCook(FurnaceExtractEvent event) {
             EventSetting.EventData eventData = getFurnaceCookInner();
             if (eventData != null) {
-                handleEvent(event, eventData.resolveConditions(), eventData.resolveActions());
+                handleEvent(event, eventData.resolveConditions(), eventData.resolveActions(), eventData.getConditionEvaluationMode());
             }
         }
     }
@@ -342,7 +394,7 @@ public class EventfulManager {
         public void onCraft(CraftItemEvent event) {
             EventSetting.EventData eventData = getCraftInner();
             if (eventData != null) {
-                handleEvent(event, eventData.resolveConditions(), eventData.resolveActions());
+                handleEvent(event, eventData.resolveConditions(), eventData.resolveActions(), eventData.getConditionEvaluationMode());
             }
         }
     }
@@ -352,7 +404,7 @@ public class EventfulManager {
         public void onMove(PlayerMoveEvent event) {
             EventSetting.EventData eventData = getMoveInner();
             if (eventData != null) {
-                handleEvent(event, eventData.resolveConditions(), eventData.resolveActions());
+                handleEvent(event, eventData.resolveConditions(), eventData.resolveActions(), eventData.getConditionEvaluationMode());
             }
         }
     }
@@ -362,7 +414,7 @@ public class EventfulManager {
         public void onPlayerDeath(PlayerDeathEvent event) {
             EventSetting.EventData eventData = getPlayerDeathInner();
             if (eventData != null) {
-                handleEvent(event, eventData.resolveConditions(), eventData.resolveActions());
+                handleEvent(event, eventData.resolveConditions(), eventData.resolveActions(), eventData.getConditionEvaluationMode());
             }
         }
     }
@@ -372,7 +424,7 @@ public class EventfulManager {
         public void onPlayerDamage(EntityDamageByEntityEvent event) {
             EventSetting.EventData eventData = getPlayerDamageInner();
             if (eventData != null && event.getEntity() instanceof Player) {
-                handleEvent(event, eventData.resolveConditions(), eventData.resolveActions());
+                handleEvent(event, eventData.resolveConditions(), eventData.resolveActions(), eventData.getConditionEvaluationMode());
             }
         }
     }
@@ -382,7 +434,7 @@ public class EventfulManager {
         public void onPlayerBedEnter(PlayerBedEnterEvent event) {
             EventSetting.EventData eventData = getPlayerBedInner();
             if (eventData != null) {
-                handleEvent(event, eventData.resolveConditions(), eventData.resolveActions());
+                handleEvent(event, eventData.resolveConditions(), eventData.resolveActions(), eventData.getConditionEvaluationMode());
             }
         }
 
@@ -390,7 +442,7 @@ public class EventfulManager {
         public void onPlayerBedLeave(PlayerBedLeaveEvent event) {
             EventSetting.EventData eventData = getPlayerBedInner();
             if (eventData != null) {
-                handleEvent(event, eventData.resolveConditions(), eventData.resolveActions());
+                handleEvent(event, eventData.resolveConditions(), eventData.resolveActions(), eventData.getConditionEvaluationMode());
             }
         }
     }
@@ -400,7 +452,7 @@ public class EventfulManager {
         public void onItemConsume(PlayerItemConsumeEvent event) {
             EventSetting.EventData eventData = getItemConsumeInner();
             if (eventData != null) {
-                handleEvent(event, eventData.resolveConditions(), eventData.resolveActions());
+                handleEvent(event, eventData.resolveConditions(), eventData.resolveActions(), eventData.getConditionEvaluationMode());
             }
         }
     }
@@ -410,7 +462,7 @@ public class EventfulManager {
         public void onItemPickup(PlayerAttemptPickupItemEvent event) {
             EventSetting.EventData eventData = getItemPickupInner();
             if (eventData != null) {
-                handleEvent(event, eventData.resolveConditions(), eventData.resolveActions());
+                handleEvent(event, eventData.resolveConditions(), eventData.resolveActions(), eventData.getConditionEvaluationMode());
             }
         }
     }
@@ -420,7 +472,7 @@ public class EventfulManager {
         public void onEntityInteract(PlayerInteractEntityEvent event) {
             EventSetting.EventData eventData = getEntityInteractInner();
             if (eventData != null) {
-                handleEvent(event, eventData.resolveConditions(), eventData.resolveActions());
+                handleEvent(event, eventData.resolveConditions(), eventData.resolveActions(), eventData.getConditionEvaluationMode());
             }
         }
     }
@@ -430,7 +482,7 @@ public class EventfulManager {
         public void onItemEnchant(EnchantItemEvent event) {
             EventSetting.EventData eventData = getItemEnchantInner();
             if (eventData != null) {
-                handleEvent(event, eventData.resolveConditions(), eventData.resolveActions());
+                handleEvent(event, eventData.resolveConditions(), eventData.resolveActions(), eventData.getConditionEvaluationMode());
             }
         }
     }
@@ -440,7 +492,7 @@ public class EventfulManager {
         public void onItemRepair(PrepareAnvilEvent event) {
             EventSetting.EventData eventData = getItemRepairInner();
             if (eventData != null) {
-                handleEvent(event, eventData.resolveConditions(), eventData.resolveActions());
+                handleEvent(event, eventData.resolveConditions(), eventData.resolveActions(), eventData.getConditionEvaluationMode());
             }
         }
     }
@@ -450,7 +502,7 @@ public class EventfulManager {
         public void onItemDrop(PlayerDropItemEvent event) {
             EventSetting.EventData eventData = getItemDropInner();
             if (eventData != null) {
-                handleEvent(event, eventData.resolveConditions(), eventData.resolveActions());
+                handleEvent(event, eventData.resolveConditions(), eventData.resolveActions(), eventData.getConditionEvaluationMode());
             }
         }
     }

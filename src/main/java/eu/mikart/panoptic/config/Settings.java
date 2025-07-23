@@ -1,14 +1,15 @@
 package eu.mikart.panoptic.config;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import org.jetbrains.annotations.NotNull;
+
 import de.exlll.configlib.Comment;
 import de.exlll.configlib.Configuration;
 import eu.mikart.panoptic.command.PluginCommand;
 import lombok.AccessLevel;
 import lombok.Getter;
-import org.jetbrains.annotations.NotNull;
-
-import java.util.ArrayList;
-import java.util.List;
 
 @Getter
 @Configuration
@@ -25,6 +26,9 @@ public class Settings {
     private boolean debug = false;
     private boolean usePlaceholderAPI = true;
     private boolean useMiniPlaceholders = true;
+    
+    @Comment("Enable timed events feature to run scheduled commands")
+    private boolean timedEvents = false;
 
     @Comment("Add Panoptic commands to this list to prevent them from being registered (e.g. ['panoptic'])")
     @Getter(AccessLevel.NONE)
