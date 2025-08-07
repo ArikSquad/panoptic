@@ -111,166 +111,6 @@ public class EventfulManager {
         HandlerList.unregisterAll(plugin);
     }
 
-    private EventSetting.EventData getBlockBreakInner() {
-        BlockBreakSetting setting = plugin.getBlockBreakSetting();
-        if (setting.getEvents() != null && !setting.getEvents().isEmpty()) {
-            return setting.getEvents().getFirst();
-        }
-        return null;
-    }
-
-    private EventSetting.EventData getBlockPlaceInner() {
-        BlockPlaceSetting setting = plugin.getBlockPlaceSetting();
-        if (setting.getEvents() != null && !setting.getEvents().isEmpty()) {
-            return setting.getEvents().getFirst();
-        }
-        return null;
-    }
-
-    private EventSetting.EventData getPlayerTeleportInner() {
-        PlayerTeleportSetting setting = plugin.getPlayerTeleportSetting();
-        if (setting.getEvents() != null && !setting.getEvents().isEmpty()) {
-            return setting.getEvents().getFirst();
-        }
-        return null;
-    }
-
-    private EventSetting.EventData getPlayerJoinInner() {
-        PlayerJoinSetting setting = plugin.getPlayerJoinSetting();
-        if (setting.getEvents() != null && !setting.getEvents().isEmpty()) {
-            return setting.getEvents().getFirst();
-        }
-        return null;
-    }
-
-    private EventSetting.EventData getPlayerLeaveInner() {
-        PlayerLeaveSetting setting = plugin.getPlayerLeaveSetting();
-        if (setting.getEvents() != null && !setting.getEvents().isEmpty()) {
-            return setting.getEvents().getFirst();
-        }
-        return null;
-    }
-
-    private EventSetting.EventData getFishCatchInner() {
-        FishCatchSetting setting = plugin.getFishCatchSetting();
-        if (setting.getEvents() != null && !setting.getEvents().isEmpty()) {
-            return setting.getEvents().getFirst();
-        }
-        return null;
-    }
-
-    private EventSetting.EventData getFishingInner() {
-        FishingSetting setting = plugin.getFishingSetting();
-        if (setting.getEvents() != null && !setting.getEvents().isEmpty()) {
-            return setting.getEvents().getFirst();
-        }
-        return null;
-    }
-
-    private EventSetting.EventData getEntityKillInner() {
-        EntityKillSetting setting = plugin.getEntityKillSetting();
-        if (setting.getEvents() != null && !setting.getEvents().isEmpty()) {
-            return setting.getEvents().getFirst();
-        }
-        return null;
-    }
-
-    private EventSetting.EventData getFurnaceCookInner() {
-        FurnaceCookSetting setting = plugin.getFurnaceCookSetting();
-        if (setting.getEvents() != null && !setting.getEvents().isEmpty()) {
-            return setting.getEvents().getFirst();
-        }
-        return null;
-    }
-
-    private EventSetting.EventData getCraftInner() {
-        CraftSetting setting = plugin.getCraftSetting();
-        if (setting.getEvents() != null && !setting.getEvents().isEmpty()) {
-            return setting.getEvents().getFirst();
-        }
-        return null;
-    }
-
-    private EventSetting.EventData getMoveInner() {
-        MoveSetting setting = plugin.getMoveSetting();
-        if (setting.getEvents() != null && !setting.getEvents().isEmpty()) {
-            return setting.getEvents().getFirst();
-        }
-        return null;
-    }
-
-    private EventSetting.EventData getPlayerDeathInner() {
-        PlayerDeathSetting setting = plugin.getPlayerDeathSetting();
-        if (setting.getEvents() != null && !setting.getEvents().isEmpty()) {
-            return setting.getEvents().getFirst();
-        }
-        return null;
-    }
-
-    private EventSetting.EventData getPlayerDamageInner() {
-        PlayerDamageSetting setting = plugin.getPlayerDamageSetting();
-        if (setting.getEvents() != null && !setting.getEvents().isEmpty()) {
-            return setting.getEvents().getFirst();
-        }
-        return null;
-    }
-
-    private EventSetting.EventData getPlayerBedInner() {
-        PlayerSleepSetting setting = plugin.getPlayerSleepSetting();
-        if (setting.getEvents() != null && !setting.getEvents().isEmpty()) {
-            return setting.getEvents().getFirst();
-        }
-        return null;
-    }
-
-    private EventSetting.EventData getItemConsumeInner() {
-        ItemConsumeSetting setting = plugin.getItemConsumeSetting();
-        if (setting.getEvents() != null && !setting.getEvents().isEmpty()) {
-            return setting.getEvents().getFirst();
-        }
-        return null;
-    }
-
-    private EventSetting.EventData getItemPickupInner() {
-        ItemPickupSetting setting = plugin.getItemPickupSetting();
-        if (setting.getEvents() != null && !setting.getEvents().isEmpty()) {
-            return setting.getEvents().getFirst();
-        }
-        return null;
-    }
-
-    private EventSetting.EventData getEntityInteractInner() {
-        EntityInteractSetting setting = plugin.getEntityInteractSetting();
-        if (setting.getEvents() != null && !setting.getEvents().isEmpty()) {
-            return setting.getEvents().getFirst();
-        }
-        return null;
-    }
-
-    private EventSetting.EventData getItemEnchantInner() {
-        ItemEnchantSetting setting = plugin.getItemEnchantSetting();
-        if (setting.getEvents() != null && !setting.getEvents().isEmpty()) {
-            return setting.getEvents().getFirst();
-        }
-        return null;
-    }
-
-    private EventSetting.EventData getItemRepairInner() {
-        ItemRepairSetting setting = plugin.getItemRepairSetting();
-        if (setting.getEvents() != null && !setting.getEvents().isEmpty()) {
-            return setting.getEvents().getFirst();
-        }
-        return null;
-    }
-
-    private EventSetting.EventData getItemDropInner() {
-        ItemDropSetting setting = plugin.getItemDropSetting();
-        if (setting.getEvents() != null && !setting.getEvents().isEmpty()) {
-            return setting.getEvents().getFirst();
-        }
-        return null;
-    }
-
     public void handleEvent(Event event, List<Condition> conditions, List<Action> actions, ConditionEvaluationMode evaluationMode) {
         boolean conditionsMet = evaluateConditions(conditions, event, evaluationMode);
         if (conditionsMet) {
@@ -288,7 +128,7 @@ public class EventfulManager {
      */
     private boolean evaluateConditions(List<Condition> conditions, Event event, ConditionEvaluationMode evaluationMode) {
         if (conditions == null || conditions.isEmpty()) {
-            return true; // No conditions means always execute
+            return true; // No conditions means it'll always execute
         }
 
         return switch (evaluationMode) {
@@ -302,9 +142,11 @@ public class EventfulManager {
     private class BlockBreakListener implements Listener {
         @EventHandler
         public void onBlockBreak(BlockBreakEvent event) {
-            EventSetting.EventData eventData = getBlockBreakInner();
-            if (eventData != null) {
-                handleEvent(event, eventData.resolveConditions(), eventData.resolveActions(), eventData.getConditionEvaluationMode());
+            BlockBreakSetting setting = plugin.getBlockBreakSetting();
+            if (setting.getEvents() != null && !setting.getEvents().isEmpty()) {
+                for (EventSetting.EventData eventData : setting.getEvents()) {
+                    handleEvent(event, eventData.resolveConditions(), eventData.resolveActions(), eventData.getConditionEvaluationMode());
+                }
             }
         }
     }
@@ -312,9 +154,11 @@ public class EventfulManager {
     private class BlockPlaceListener implements Listener {
         @EventHandler
         public void onBlockPlace(BlockPlaceEvent event) {
-            EventSetting.EventData eventData = getBlockPlaceInner();
-            if (eventData != null) {
-                handleEvent(event, eventData.resolveConditions(), eventData.resolveActions(), eventData.getConditionEvaluationMode());
+            BlockPlaceSetting setting = plugin.getBlockPlaceSetting();
+            if (setting.getEvents() != null && !setting.getEvents().isEmpty()) {
+                for (EventSetting.EventData eventData : setting.getEvents()) {
+                    handleEvent(event, eventData.resolveConditions(), eventData.resolveActions(), eventData.getConditionEvaluationMode());
+                }
             }
         }
     }
@@ -322,9 +166,11 @@ public class EventfulManager {
     private class PlayerTeleportListener implements Listener {
         @EventHandler
         public void onPlayerTeleport(PlayerTeleportEvent event) {
-            EventSetting.EventData eventData = getPlayerTeleportInner();
-            if (eventData != null) {
-                handleEvent(event, eventData.resolveConditions(), eventData.resolveActions(), eventData.getConditionEvaluationMode());
+            PlayerTeleportSetting setting = plugin.getPlayerTeleportSetting();
+            if (setting.getEvents() != null && !setting.getEvents().isEmpty()) {
+                for (EventSetting.EventData eventData : setting.getEvents()) {
+                    handleEvent(event, eventData.resolveConditions(), eventData.resolveActions(), eventData.getConditionEvaluationMode());
+                }
             }
         }
     }
@@ -332,9 +178,11 @@ public class EventfulManager {
     private class PlayerJoinListener implements Listener {
         @EventHandler
         public void onPlayerJoin(PlayerJoinEvent event) {
-            EventSetting.EventData eventData = getPlayerJoinInner();
-            if (eventData != null) {
-                handleEvent(event, eventData.resolveConditions(), eventData.resolveActions(), eventData.getConditionEvaluationMode());
+            PlayerJoinSetting setting = plugin.getPlayerJoinSetting();
+            if (setting.getEvents() != null && !setting.getEvents().isEmpty()) {
+                for (EventSetting.EventData eventData : setting.getEvents()) {
+                    handleEvent(event, eventData.resolveConditions(), eventData.resolveActions(), eventData.getConditionEvaluationMode());
+                }
             }
         }
     }
@@ -342,9 +190,11 @@ public class EventfulManager {
     private class PlayerLeaveListener implements Listener {
         @EventHandler
         public void onPlayerLeave(PlayerQuitEvent event) {
-            EventSetting.EventData eventData = getPlayerLeaveInner();
-            if (eventData != null) {
-                handleEvent(event, eventData.resolveConditions(), eventData.resolveActions(), eventData.getConditionEvaluationMode());
+            PlayerLeaveSetting setting = plugin.getPlayerLeaveSetting();
+            if (setting.getEvents() != null && !setting.getEvents().isEmpty()) {
+                for (EventSetting.EventData eventData : setting.getEvents()) {
+                    handleEvent(event, eventData.resolveConditions(), eventData.resolveActions(), eventData.getConditionEvaluationMode());
+                }
             }
         }
     }
@@ -352,9 +202,11 @@ public class EventfulManager {
     private class FishCatchListener implements Listener {
         @EventHandler
         public void onFishCatch(PlayerFishEvent event) {
-            EventSetting.EventData eventData = getFishCatchInner();
-            if (eventData != null) {
-                handleEvent(event, eventData.resolveConditions(), eventData.resolveActions(), eventData.getConditionEvaluationMode());
+            FishCatchSetting setting = plugin.getFishCatchSetting();
+            if (setting.getEvents() != null && !setting.getEvents().isEmpty()) {
+                for (EventSetting.EventData eventData : setting.getEvents()) {
+                    handleEvent(event, eventData.resolveConditions(), eventData.resolveActions(), eventData.getConditionEvaluationMode());
+                }
             }
         }
     }
@@ -362,9 +214,11 @@ public class EventfulManager {
     private class FishingListener implements Listener {
         @EventHandler
         public void onFishing(PlayerFishEvent event) {
-            EventSetting.EventData eventData = getFishingInner();
-            if (eventData != null) {
-                handleEvent(event, eventData.resolveConditions(), eventData.resolveActions(), eventData.getConditionEvaluationMode());
+            FishingSetting setting = plugin.getFishingSetting();
+            if (setting.getEvents() != null && !setting.getEvents().isEmpty()) {
+                for (EventSetting.EventData eventData : setting.getEvents()) {
+                    handleEvent(event, eventData.resolveConditions(), eventData.resolveActions(), eventData.getConditionEvaluationMode());
+                }
             }
         }
     }
@@ -372,9 +226,11 @@ public class EventfulManager {
     private class EntityKillListener implements Listener {
         @EventHandler
         public void onMobKill(EntityDeathEvent event) {
-            EventSetting.EventData eventData = getEntityKillInner();
-            if (eventData != null) {
-                handleEvent(event, eventData.resolveConditions(), eventData.resolveActions(), eventData.getConditionEvaluationMode());
+            EntityKillSetting setting = plugin.getEntityKillSetting();
+            if (setting.getEvents() != null && !setting.getEvents().isEmpty()) {
+                for (EventSetting.EventData eventData : setting.getEvents()) {
+                    handleEvent(event, eventData.resolveConditions(), eventData.resolveActions(), eventData.getConditionEvaluationMode());
+                }
             }
         }
     }
@@ -382,9 +238,11 @@ public class EventfulManager {
     private class FurnaceCookListener implements Listener {
         @EventHandler
         public void onFurnaceCook(FurnaceExtractEvent event) {
-            EventSetting.EventData eventData = getFurnaceCookInner();
-            if (eventData != null) {
-                handleEvent(event, eventData.resolveConditions(), eventData.resolveActions(), eventData.getConditionEvaluationMode());
+            FurnaceCookSetting setting = plugin.getFurnaceCookSetting();
+            if (setting.getEvents() != null && !setting.getEvents().isEmpty()) {
+                for (EventSetting.EventData eventData : setting.getEvents()) {
+                    handleEvent(event, eventData.resolveConditions(), eventData.resolveActions(), eventData.getConditionEvaluationMode());
+                }
             }
         }
     }
@@ -392,9 +250,11 @@ public class EventfulManager {
     private class CraftListener implements Listener {
         @EventHandler
         public void onCraft(CraftItemEvent event) {
-            EventSetting.EventData eventData = getCraftInner();
-            if (eventData != null) {
-                handleEvent(event, eventData.resolveConditions(), eventData.resolveActions(), eventData.getConditionEvaluationMode());
+            CraftSetting setting = plugin.getCraftSetting();
+            if (setting.getEvents() != null && !setting.getEvents().isEmpty()) {
+                for (EventSetting.EventData eventData : setting.getEvents()) {
+                    handleEvent(event, eventData.resolveConditions(), eventData.resolveActions(), eventData.getConditionEvaluationMode());
+                }
             }
         }
     }
@@ -402,9 +262,11 @@ public class EventfulManager {
     private class MoveListener implements Listener {
         @EventHandler
         public void onMove(PlayerMoveEvent event) {
-            EventSetting.EventData eventData = getMoveInner();
-            if (eventData != null) {
-                handleEvent(event, eventData.resolveConditions(), eventData.resolveActions(), eventData.getConditionEvaluationMode());
+            MoveSetting setting = plugin.getMoveSetting();
+            if (setting.getEvents() != null && !setting.getEvents().isEmpty()) {
+                for (EventSetting.EventData eventData : setting.getEvents()) {
+                    handleEvent(event, eventData.resolveConditions(), eventData.resolveActions(), eventData.getConditionEvaluationMode());
+                }
             }
         }
     }
@@ -412,9 +274,11 @@ public class EventfulManager {
     private class PlayerDeathListener implements Listener {
         @EventHandler
         public void onPlayerDeath(PlayerDeathEvent event) {
-            EventSetting.EventData eventData = getPlayerDeathInner();
-            if (eventData != null) {
-                handleEvent(event, eventData.resolveConditions(), eventData.resolveActions(), eventData.getConditionEvaluationMode());
+            PlayerDeathSetting setting = plugin.getPlayerDeathSetting();
+            if (setting.getEvents() != null && !setting.getEvents().isEmpty()) {
+                for (EventSetting.EventData eventData : setting.getEvents()) {
+                    handleEvent(event, eventData.resolveConditions(), eventData.resolveActions(), eventData.getConditionEvaluationMode());
+                }
             }
         }
     }
@@ -422,9 +286,13 @@ public class EventfulManager {
     private class PlayerDamageListener implements Listener {
         @EventHandler
         public void onPlayerDamage(EntityDamageByEntityEvent event) {
-            EventSetting.EventData eventData = getPlayerDamageInner();
-            if (eventData != null && event.getEntity() instanceof Player) {
-                handleEvent(event, eventData.resolveConditions(), eventData.resolveActions(), eventData.getConditionEvaluationMode());
+            if (event.getEntity() instanceof Player) {
+                PlayerDamageSetting setting = plugin.getPlayerDamageSetting();
+                if (setting.getEvents() != null && !setting.getEvents().isEmpty()) {
+                    for (EventSetting.EventData eventData : setting.getEvents()) {
+                        handleEvent(event, eventData.resolveConditions(), eventData.resolveActions(), eventData.getConditionEvaluationMode());
+                    }
+                }
             }
         }
     }
@@ -432,17 +300,21 @@ public class EventfulManager {
     private class PlayerBedListener implements Listener {
         @EventHandler
         public void onPlayerBedEnter(PlayerBedEnterEvent event) {
-            EventSetting.EventData eventData = getPlayerBedInner();
-            if (eventData != null) {
-                handleEvent(event, eventData.resolveConditions(), eventData.resolveActions(), eventData.getConditionEvaluationMode());
+            PlayerSleepSetting setting = plugin.getPlayerSleepSetting();
+            if (setting.getEvents() != null && !setting.getEvents().isEmpty()) {
+                for (EventSetting.EventData eventData : setting.getEvents()) {
+                    handleEvent(event, eventData.resolveConditions(), eventData.resolveActions(), eventData.getConditionEvaluationMode());
+                }
             }
         }
 
         @EventHandler
         public void onPlayerBedLeave(PlayerBedLeaveEvent event) {
-            EventSetting.EventData eventData = getPlayerBedInner();
-            if (eventData != null) {
-                handleEvent(event, eventData.resolveConditions(), eventData.resolveActions(), eventData.getConditionEvaluationMode());
+            PlayerSleepSetting setting = plugin.getPlayerSleepSetting();
+            if (setting.getEvents() != null && !setting.getEvents().isEmpty()) {
+                for (EventSetting.EventData eventData : setting.getEvents()) {
+                    handleEvent(event, eventData.resolveConditions(), eventData.resolveActions(), eventData.getConditionEvaluationMode());
+                }
             }
         }
     }
@@ -450,9 +322,11 @@ public class EventfulManager {
     private class ItemConsumeListener implements Listener {
         @EventHandler
         public void onItemConsume(PlayerItemConsumeEvent event) {
-            EventSetting.EventData eventData = getItemConsumeInner();
-            if (eventData != null) {
-                handleEvent(event, eventData.resolveConditions(), eventData.resolveActions(), eventData.getConditionEvaluationMode());
+            ItemConsumeSetting setting = plugin.getItemConsumeSetting();
+            if (setting.getEvents() != null && !setting.getEvents().isEmpty()) {
+                for (EventSetting.EventData eventData : setting.getEvents()) {
+                    handleEvent(event, eventData.resolveConditions(), eventData.resolveActions(), eventData.getConditionEvaluationMode());
+                }
             }
         }
     }
@@ -460,9 +334,11 @@ public class EventfulManager {
     private class ItemPickupListener implements Listener {
         @EventHandler
         public void onItemPickup(PlayerAttemptPickupItemEvent event) {
-            EventSetting.EventData eventData = getItemPickupInner();
-            if (eventData != null) {
-                handleEvent(event, eventData.resolveConditions(), eventData.resolveActions(), eventData.getConditionEvaluationMode());
+            ItemPickupSetting setting = plugin.getItemPickupSetting();
+            if (setting.getEvents() != null && !setting.getEvents().isEmpty()) {
+                for (EventSetting.EventData eventData : setting.getEvents()) {
+                    handleEvent(event, eventData.resolveConditions(), eventData.resolveActions(), eventData.getConditionEvaluationMode());
+                }
             }
         }
     }
@@ -470,9 +346,11 @@ public class EventfulManager {
     private class EntityInteractListener implements Listener {
         @EventHandler
         public void onEntityInteract(PlayerInteractEntityEvent event) {
-            EventSetting.EventData eventData = getEntityInteractInner();
-            if (eventData != null) {
-                handleEvent(event, eventData.resolveConditions(), eventData.resolveActions(), eventData.getConditionEvaluationMode());
+            EntityInteractSetting setting = plugin.getEntityInteractSetting();
+            if (setting.getEvents() != null && !setting.getEvents().isEmpty()) {
+                for (EventSetting.EventData eventData : setting.getEvents()) {
+                    handleEvent(event, eventData.resolveConditions(), eventData.resolveActions(), eventData.getConditionEvaluationMode());
+                }
             }
         }
     }
@@ -480,9 +358,11 @@ public class EventfulManager {
     private class ItemEnchantListener implements Listener {
         @EventHandler
         public void onItemEnchant(EnchantItemEvent event) {
-            EventSetting.EventData eventData = getItemEnchantInner();
-            if (eventData != null) {
-                handleEvent(event, eventData.resolveConditions(), eventData.resolveActions(), eventData.getConditionEvaluationMode());
+            ItemEnchantSetting setting = plugin.getItemEnchantSetting();
+            if (setting.getEvents() != null && !setting.getEvents().isEmpty()) {
+                for (EventSetting.EventData eventData : setting.getEvents()) {
+                    handleEvent(event, eventData.resolveConditions(), eventData.resolveActions(), eventData.getConditionEvaluationMode());
+                }
             }
         }
     }
@@ -490,9 +370,11 @@ public class EventfulManager {
     private class ItemRepairListener implements Listener {
         @EventHandler
         public void onItemRepair(PrepareAnvilEvent event) {
-            EventSetting.EventData eventData = getItemRepairInner();
-            if (eventData != null) {
-                handleEvent(event, eventData.resolveConditions(), eventData.resolveActions(), eventData.getConditionEvaluationMode());
+            ItemRepairSetting setting = plugin.getItemRepairSetting();
+            if (setting.getEvents() != null && !setting.getEvents().isEmpty()) {
+                for (EventSetting.EventData eventData : setting.getEvents()) {
+                    handleEvent(event, eventData.resolveConditions(), eventData.resolveActions(), eventData.getConditionEvaluationMode());
+                }
             }
         }
     }
@@ -500,9 +382,11 @@ public class EventfulManager {
     private class ItemDropListener implements Listener {
         @EventHandler
         public void onItemDrop(PlayerDropItemEvent event) {
-            EventSetting.EventData eventData = getItemDropInner();
-            if (eventData != null) {
-                handleEvent(event, eventData.resolveConditions(), eventData.resolveActions(), eventData.getConditionEvaluationMode());
+            ItemDropSetting setting = plugin.getItemDropSetting();
+            if (setting.getEvents() != null && !setting.getEvents().isEmpty()) {
+                for (EventSetting.EventData eventData : setting.getEvents()) {
+                    handleEvent(event, eventData.resolveConditions(), eventData.resolveActions(), eventData.getConditionEvaluationMode());
+                }
             }
         }
     }
