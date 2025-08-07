@@ -28,6 +28,7 @@ public class ConditionRegistry {
         register("random", data -> new RandomCondition(((DoubleConditionParams) data.params()).value()));
         register("block_location", data -> new BlockLocationCondition(((StringConditionParams) data.params()).value()));
         register("block_at_location", data -> new BlockAtLocationCondition(((StringConditionParams) data.params()).value()));
+        register("world", data -> new WorldCondition(((StringConditionParams) data.params()).value()));
     }
 
     /**
