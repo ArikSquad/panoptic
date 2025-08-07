@@ -1,4 +1,4 @@
-package eu.mikart.panoptic.event;
+package eu.mikart.panoptic.event.context;
 
 import eu.mikart.panoptic.PanopticPlugin;
 import io.github.miniplaceholders.api.MiniPlaceholders;

@@ -1,23 +1,19 @@
-package eu.mikart.panoptic.event.registry;
+package eu.mikart.panoptic.event;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
-import eu.mikart.panoptic.event.Condition;
-import eu.mikart.panoptic.event.ConditionData;
-import eu.mikart.panoptic.event.condition.EntityTypeCondition;
-import eu.mikart.panoptic.event.condition.MiniPlaceholderCondition;
-import eu.mikart.panoptic.event.condition.PlaceholderCondition;
-import eu.mikart.panoptic.event.condition.RandomCondition;
-import eu.mikart.panoptic.event.condition.SneakingCondition;
+import eu.mikart.panoptic.event.condition.Condition;
+import eu.mikart.panoptic.event.condition.ConditionData;
+import eu.mikart.panoptic.event.condition.impl.*;
 import eu.mikart.panoptic.event.condition.params.DoubleConditionParams;
 import eu.mikart.panoptic.event.condition.params.StringConditionParams;
 
 /**
  * Registry for managing condition types and their factory methods.
  * This registry allows for dynamic creation of conditions based on configuration data.
- * 
+ *
  * @author ArikSquad
  * @since 1.0.0
  */
@@ -30,11 +26,12 @@ public class ConditionRegistry {
         register("miniplaceholder", data -> new MiniPlaceholderCondition(((StringConditionParams) data.params()).value()));
         register("entity_type", data -> new EntityTypeCondition(((StringConditionParams) data.params()).value()));
         register("random", data -> new RandomCondition(((DoubleConditionParams) data.params()).value()));
+        register("block_location", data -> new BlockLocationCondition(((StringConditionParams) data.params()).value()));
     }
 
     /**
      * Registers a new condition type with its factory method.
-     * 
+     *
      * @param type The unique identifier for the condition type
      * @param factory The factory method that creates instances of the condition
      */
@@ -44,7 +41,7 @@ public class ConditionRegistry {
 
     /**
      * Creates a condition instance from configuration data.
-     * 
+     *
      * @param data The condition configuration data
      * @return A new condition instance
      * @throws IllegalArgumentException if the condition type is unknown

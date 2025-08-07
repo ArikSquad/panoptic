@@ -1,7 +1,7 @@
-package eu.mikart.panoptic.event.action;
+package eu.mikart.panoptic.event.action.impl;
 
-import eu.mikart.panoptic.event.Action;
-import eu.mikart.panoptic.event.MiniPlaceholderContextParser;
+import eu.mikart.panoptic.event.action.Action;
+import eu.mikart.panoptic.event.context.MiniPlaceholderContextParser;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.event.player.PlayerEvent;

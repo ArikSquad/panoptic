@@ -1,8 +1,8 @@
-package eu.mikart.panoptic.event.registry;
+package eu.mikart.panoptic.event;
 
-import eu.mikart.panoptic.event.Action;
-import eu.mikart.panoptic.event.ActionData;
-import eu.mikart.panoptic.event.action.*;
+import eu.mikart.panoptic.event.action.Action;
+import eu.mikart.panoptic.event.action.ActionData;
+import eu.mikart.panoptic.event.action.impl.*;
 import eu.mikart.panoptic.event.action.value.StringActionValue;
 
 import java.util.HashMap;

@@ -1,6 +1,6 @@
-package eu.mikart.panoptic.event.condition;
+package eu.mikart.panoptic.event.condition.impl;
 
-import eu.mikart.panoptic.event.Condition;
+import eu.mikart.panoptic.event.condition.Condition;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 

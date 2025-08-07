@@ -1,4 +1,4 @@
-package eu.mikart.panoptic.event;
+package eu.mikart.panoptic.event.context;
 
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;

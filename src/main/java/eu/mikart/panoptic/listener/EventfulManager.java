@@ -52,8 +52,8 @@ import eu.mikart.panoptic.config.event.PlayerJoinSetting;
 import eu.mikart.panoptic.config.event.PlayerLeaveSetting;
 import eu.mikart.panoptic.config.event.PlayerSleepSetting;
 import eu.mikart.panoptic.config.event.PlayerTeleportSetting;
-import eu.mikart.panoptic.event.Action;
-import eu.mikart.panoptic.event.Condition;
+import eu.mikart.panoptic.event.action.Action;
+import eu.mikart.panoptic.event.condition.Condition;
 
 public class EventfulManager {
     private final PanopticPlugin plugin;
@@ -280,7 +280,7 @@ public class EventfulManager {
 
     /**
      * Evaluates a list of conditions based on the specified evaluation mode.
-     * 
+     *
      * @param conditions The list of conditions to evaluate
      * @param event The event context for condition evaluation
      * @param evaluationMode The mode determining how conditions should be evaluated
@@ -290,7 +290,7 @@ public class EventfulManager {
         if (conditions == null || conditions.isEmpty()) {
             return true; // No conditions means always execute
         }
-        
+
         return switch (evaluationMode) {
             case REQUIRE_ALL -> conditions.stream().allMatch(cond -> cond.evaluate(event));
             case REQUIRE_ANY -> conditions.stream().anyMatch(cond -> cond.evaluate(event));

@@ -1,4 +1,4 @@
-package eu.mikart.panoptic.event;
+package eu.mikart.panoptic.event.condition;
 
 import eu.mikart.panoptic.event.condition.params.ConditionParams;
 

@@ -1,7 +1,7 @@
-package eu.mikart.panoptic.event.condition;
+package eu.mikart.panoptic.event.condition.impl;
 
-import eu.mikart.panoptic.event.Condition;
-import eu.mikart.panoptic.event.MiniPlaceholderContextParser;
+import eu.mikart.panoptic.event.condition.Condition;
+import eu.mikart.panoptic.event.context.MiniPlaceholderContextParser;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 

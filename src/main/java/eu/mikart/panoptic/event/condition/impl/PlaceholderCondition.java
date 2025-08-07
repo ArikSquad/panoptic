@@ -1,7 +1,7 @@
-package eu.mikart.panoptic.event.condition;
+package eu.mikart.panoptic.event.condition.impl;
 
-import eu.mikart.panoptic.event.Condition;
-import eu.mikart.panoptic.event.PlaceholderContextParser;
+import eu.mikart.panoptic.event.condition.Condition;
+import eu.mikart.panoptic.event.context.PlaceholderContextParser;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 
@@ -49,7 +49,7 @@ public class PlaceholderCondition implements Condition {
     public boolean evaluate(Event event) {
         Player player = ripPlayerOffEvent(event);
         if (player == null) return false;
-        
+
         String parsed = PlaceholderContextParser.parse(expression, player);
         Matcher matcher = EXPRESSION_PATTERN.matcher(parsed);
         if (!matcher.matches()) return false;

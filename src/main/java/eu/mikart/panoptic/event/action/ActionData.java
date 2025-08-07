@@ -1,4 +1,4 @@
-package eu.mikart.panoptic.event;
+package eu.mikart.panoptic.event.action;
 
 import eu.mikart.panoptic.event.action.value.ActionValue;
 
