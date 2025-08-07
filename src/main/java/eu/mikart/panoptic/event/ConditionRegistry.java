@@ -27,6 +27,7 @@ public class ConditionRegistry {
         register("entity_type", data -> new EntityTypeCondition(((StringConditionParams) data.params()).value()));
         register("random", data -> new RandomCondition(((DoubleConditionParams) data.params()).value()));
         register("block_location", data -> new BlockLocationCondition(((StringConditionParams) data.params()).value()));
+        register("block_at_location", data -> new BlockAtLocationCondition(((StringConditionParams) data.params()).value()));
     }
 
     /**
