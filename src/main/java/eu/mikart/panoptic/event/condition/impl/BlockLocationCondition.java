@@ -3,10 +3,7 @@ package eu.mikart.panoptic.event.condition.impl;
 import eu.mikart.panoptic.event.condition.Condition;
 import org.bukkit.Location;
 import org.bukkit.event.Event;
-import org.bukkit.event.block.BlockBreakEvent;
-import org.bukkit.event.block.BlockExpEvent;
-import org.bukkit.event.entity.EntityDamageByEntityEvent;
-import org.bukkit.event.entity.EntityDeathEvent;
+import org.bukkit.event.block.BlockEvent;
 
 public class BlockLocationCondition implements Condition {
 	private final String blockLocation;
@@ -17,7 +14,7 @@ public class BlockLocationCondition implements Condition {
 
 	@Override
 	public boolean evaluate(Event event) {
-		if (event instanceof BlockExpEvent e) {
+		if (event instanceof BlockEvent e) {
 			return locationToString(e.getBlock().getLocation()).equalsIgnoreCase(blockLocation);
 		}
 		return false;
