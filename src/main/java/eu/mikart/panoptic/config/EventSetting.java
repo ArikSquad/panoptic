@@ -15,7 +15,9 @@ public abstract class EventSetting<T extends EventSetting.EventData> {
     public record EventData(
             List<ConditionData> conditions,
             List<ActionData> actions,
-            ConditionEvaluationMode conditionEvaluationMode) {
+            ConditionEvaluationMode conditionEvaluationMode,
+            Long perPlayerCooldown,
+            Long globalCooldown) {
 
         public List<Condition> resolveConditions() {
             return conditions == null ? List.of() :
@@ -40,4 +42,3 @@ public abstract class EventSetting<T extends EventSetting.EventData> {
         }
     }
 }
-

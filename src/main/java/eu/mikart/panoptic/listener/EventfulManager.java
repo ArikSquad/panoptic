@@ -1,7 +1,9 @@
 package eu.mikart.panoptic.listener;
 
 import java.util.List;
+import java.util.UUID;
 
+import eu.mikart.panoptic.util.CooldownManager;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
@@ -21,6 +23,7 @@ import org.bukkit.event.player.PlayerAttemptPickupItemEvent;
 import org.bukkit.event.player.PlayerBedEnterEvent;
 import org.bukkit.event.player.PlayerBedLeaveEvent;
 import org.bukkit.event.player.PlayerDropItemEvent;
+import org.bukkit.event.player.PlayerEvent;
 import org.bukkit.event.player.PlayerFishEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerItemConsumeEvent;
@@ -57,6 +60,7 @@ import eu.mikart.panoptic.event.condition.Condition;
 
 public class EventfulManager {
     private final PanopticPlugin plugin;
+    private final CooldownManager cooldownManager = new CooldownManager();
 
     public EventfulManager(PanopticPlugin plugin) {
         this.plugin = plugin;
@@ -111,24 +115,23 @@ public class EventfulManager {
         HandlerList.unregisterAll(plugin);
     }
 
-    public void handleEvent(Event event, List<Condition> conditions, List<Action> actions, ConditionEvaluationMode evaluationMode) {
+    public void handleEvent(Event event, List<Condition> conditions, List<Action> actions, ConditionEvaluationMode evaluationMode, EventSetting.EventData eventData, String eventType, int eventIndex) {
+        Player player = getPlayerFromEvent(event);
+
+        if (cooldownManager.isOnCooldown(event, eventData, eventType, eventIndex, player)) {
+            return;
+        }
+
         boolean conditionsMet = evaluateConditions(conditions, event, evaluationMode);
         if (conditionsMet) {
+            cooldownManager.setCooldowns(event, eventData, eventType, eventIndex, player);
             actions.forEach(action -> action.execute(event));
         }
     }
 
-    /**
-     * Evaluates a list of conditions based on the specified evaluation mode.
-     *
-     * @param conditions The list of conditions to evaluate
-     * @param event The event context for condition evaluation
-     * @param evaluationMode The mode determining how conditions should be evaluated
-     * @return true if conditions are met according to the evaluation mode, false otherwise
-     */
     private boolean evaluateConditions(List<Condition> conditions, Event event, ConditionEvaluationMode evaluationMode) {
         if (conditions == null || conditions.isEmpty()) {
-            return true; // No conditions means it'll always execute
+            return true;
         }
 
         return switch (evaluationMode) {
@@ -139,13 +142,75 @@ public class EventfulManager {
         };
     }
 
+    public long getRemainingCooldown(String eventType, int eventIndex, UUID playerId) {
+        EventSetting.EventData eventData = getEventData(eventType, eventIndex);
+        if (eventData == null) {
+            return 0;
+        }
+
+        return cooldownManager.getRemainingCooldown(eventType, eventIndex, playerId, eventData);
+    }
+
+    private Player getPlayerFromEvent(Event event) {
+        if (event instanceof PlayerEvent playerEvent) {
+            return playerEvent.getPlayer();
+        } else if (event instanceof BlockBreakEvent blockEvent) {
+            return blockEvent.getPlayer();
+        } else if (event instanceof BlockPlaceEvent blockEvent) {
+            return blockEvent.getPlayer();
+        } else if (event instanceof EntityDamageByEntityEvent damageEvent && damageEvent.getEntity() instanceof Player) {
+            return (Player) damageEvent.getEntity();
+        } else if (event instanceof EntityDeathEvent deathEvent && deathEvent.getEntity().getKiller() != null) {
+            return deathEvent.getEntity().getKiller();
+        } else if (event instanceof FurnaceExtractEvent furnaceEvent) {
+            return furnaceEvent.getPlayer();
+        } else if (event instanceof CraftItemEvent craftEvent && craftEvent.getWhoClicked() instanceof Player) {
+            return (Player) craftEvent.getWhoClicked();
+        } else if (event instanceof EnchantItemEvent enchantEvent) {
+            return enchantEvent.getEnchanter();
+        } else if (event instanceof PrepareAnvilEvent anvilEvent && anvilEvent.getViewers().getFirst() instanceof Player) {
+            return (Player) anvilEvent.getViewers().getFirst();
+        }
+        return null;
+    }
+
+    private EventSetting.EventData getEventData(String eventType, int eventIndex) {
+        try {
+            return switch (eventType.toLowerCase()) {
+                case "block_break" -> plugin.getBlockBreakSetting().getEvents().get(eventIndex);
+                case "block_place" -> plugin.getBlockPlaceSetting().getEvents().get(eventIndex);
+                case "player_teleport" -> plugin.getPlayerTeleportSetting().getEvents().get(eventIndex);
+                case "player_join" -> plugin.getPlayerJoinSetting().getEvents().get(eventIndex);
+                case "player_leave" -> plugin.getPlayerLeaveSetting().getEvents().get(eventIndex);
+                case "fish_catch" -> plugin.getFishCatchSetting().getEvents().get(eventIndex);
+                case "fishing" -> plugin.getFishingSetting().getEvents().get(eventIndex);
+                case "entity_kill" -> plugin.getEntityKillSetting().getEvents().get(eventIndex);
+                case "furnace_cook" -> plugin.getFurnaceCookSetting().getEvents().get(eventIndex);
+                case "craft" -> plugin.getCraftSetting().getEvents().get(eventIndex);
+                case "move" -> plugin.getMoveSetting().getEvents().get(eventIndex);
+                case "player_death" -> plugin.getPlayerDeathSetting().getEvents().get(eventIndex);
+                case "player_damage" -> plugin.getPlayerDamageSetting().getEvents().get(eventIndex);
+                case "player_sleep" -> plugin.getPlayerSleepSetting().getEvents().get(eventIndex);
+                case "item_consume" -> plugin.getItemConsumeSetting().getEvents().get(eventIndex);
+                case "item_pickup" -> plugin.getItemPickupSetting().getEvents().get(eventIndex);
+                case "entity_interact" -> plugin.getEntityInteractSetting().getEvents().get(eventIndex);
+                case "item_enchant" -> plugin.getItemEnchantSetting().getEvents().get(eventIndex);
+                case "item_repair" -> plugin.getItemRepairSetting().getEvents().get(eventIndex);
+                case "item_drop" -> plugin.getItemDropSetting().getEvents().get(eventIndex);
+                default -> null;
+            };
+        } catch (IndexOutOfBoundsException e) {
+            return null;
+        }
+    }
+
     private class BlockBreakListener implements Listener {
         @EventHandler
         public void onBlockBreak(BlockBreakEvent event) {
             BlockBreakSetting setting = plugin.getBlockBreakSetting();
             if (setting.getEvents() != null && !setting.getEvents().isEmpty()) {
                 for (EventSetting.EventData eventData : setting.getEvents()) {
-                    handleEvent(event, eventData.resolveConditions(), eventData.resolveActions(), eventData.getConditionEvaluationMode());
+                    handleEvent(event, eventData.resolveConditions(), eventData.resolveActions(), eventData.getConditionEvaluationMode(), eventData, "block_break", setting.getEvents().indexOf(eventData));
                 }
             }
         }
@@ -157,7 +222,7 @@ public class EventfulManager {
             BlockPlaceSetting setting = plugin.getBlockPlaceSetting();
             if (setting.getEvents() != null && !setting.getEvents().isEmpty()) {
                 for (EventSetting.EventData eventData : setting.getEvents()) {
-                    handleEvent(event, eventData.resolveConditions(), eventData.resolveActions(), eventData.getConditionEvaluationMode());
+                    handleEvent(event, eventData.resolveConditions(), eventData.resolveActions(), eventData.getConditionEvaluationMode(), eventData, "block_place", setting.getEvents().indexOf(eventData));
                 }
             }
         }
@@ -169,7 +234,7 @@ public class EventfulManager {
             PlayerTeleportSetting setting = plugin.getPlayerTeleportSetting();
             if (setting.getEvents() != null && !setting.getEvents().isEmpty()) {
                 for (EventSetting.EventData eventData : setting.getEvents()) {
-                    handleEvent(event, eventData.resolveConditions(), eventData.resolveActions(), eventData.getConditionEvaluationMode());
+                    handleEvent(event, eventData.resolveConditions(), eventData.resolveActions(), eventData.getConditionEvaluationMode(), eventData, "player_teleport", setting.getEvents().indexOf(eventData));
                 }
             }
         }
@@ -181,7 +246,7 @@ public class EventfulManager {
             PlayerJoinSetting setting = plugin.getPlayerJoinSetting();
             if (setting.getEvents() != null && !setting.getEvents().isEmpty()) {
                 for (EventSetting.EventData eventData : setting.getEvents()) {
-                    handleEvent(event, eventData.resolveConditions(), eventData.resolveActions(), eventData.getConditionEvaluationMode());
+                    handleEvent(event, eventData.resolveConditions(), eventData.resolveActions(), eventData.getConditionEvaluationMode(), eventData, "player_join", setting.getEvents().indexOf(eventData));
                 }
             }
         }
@@ -193,7 +258,7 @@ public class EventfulManager {
             PlayerLeaveSetting setting = plugin.getPlayerLeaveSetting();
             if (setting.getEvents() != null && !setting.getEvents().isEmpty()) {
                 for (EventSetting.EventData eventData : setting.getEvents()) {
-                    handleEvent(event, eventData.resolveConditions(), eventData.resolveActions(), eventData.getConditionEvaluationMode());
+                    handleEvent(event, eventData.resolveConditions(), eventData.resolveActions(), eventData.getConditionEvaluationMode(), eventData, "player_leave", setting.getEvents().indexOf(eventData));
                 }
             }
         }
@@ -205,7 +270,7 @@ public class EventfulManager {
             FishCatchSetting setting = plugin.getFishCatchSetting();
             if (setting.getEvents() != null && !setting.getEvents().isEmpty()) {
                 for (EventSetting.EventData eventData : setting.getEvents()) {
-                    handleEvent(event, eventData.resolveConditions(), eventData.resolveActions(), eventData.getConditionEvaluationMode());
+                    handleEvent(event, eventData.resolveConditions(), eventData.resolveActions(), eventData.getConditionEvaluationMode(), eventData, "fish_catch", setting.getEvents().indexOf(eventData));
                 }
             }
         }
@@ -217,7 +282,7 @@ public class EventfulManager {
             FishingSetting setting = plugin.getFishingSetting();
             if (setting.getEvents() != null && !setting.getEvents().isEmpty()) {
                 for (EventSetting.EventData eventData : setting.getEvents()) {
-                    handleEvent(event, eventData.resolveConditions(), eventData.resolveActions(), eventData.getConditionEvaluationMode());
+                    handleEvent(event, eventData.resolveConditions(), eventData.resolveActions(), eventData.getConditionEvaluationMode(), eventData, "fishing", setting.getEvents().indexOf(eventData));
                 }
             }
         }
@@ -229,7 +294,7 @@ public class EventfulManager {
             EntityKillSetting setting = plugin.getEntityKillSetting();
             if (setting.getEvents() != null && !setting.getEvents().isEmpty()) {
                 for (EventSetting.EventData eventData : setting.getEvents()) {
-                    handleEvent(event, eventData.resolveConditions(), eventData.resolveActions(), eventData.getConditionEvaluationMode());
+                    handleEvent(event, eventData.resolveConditions(), eventData.resolveActions(), eventData.getConditionEvaluationMode(), eventData, "entity_kill", setting.getEvents().indexOf(eventData));
                 }
             }
         }
@@ -241,7 +306,7 @@ public class EventfulManager {
             FurnaceCookSetting setting = plugin.getFurnaceCookSetting();
             if (setting.getEvents() != null && !setting.getEvents().isEmpty()) {
                 for (EventSetting.EventData eventData : setting.getEvents()) {
-                    handleEvent(event, eventData.resolveConditions(), eventData.resolveActions(), eventData.getConditionEvaluationMode());
+                    handleEvent(event, eventData.resolveConditions(), eventData.resolveActions(), eventData.getConditionEvaluationMode(), eventData, "furnace_cook", setting.getEvents().indexOf(eventData));
                 }
             }
         }
@@ -253,7 +318,7 @@ public class EventfulManager {
             CraftSetting setting = plugin.getCraftSetting();
             if (setting.getEvents() != null && !setting.getEvents().isEmpty()) {
                 for (EventSetting.EventData eventData : setting.getEvents()) {
-                    handleEvent(event, eventData.resolveConditions(), eventData.resolveActions(), eventData.getConditionEvaluationMode());
+                    handleEvent(event, eventData.resolveConditions(), eventData.resolveActions(), eventData.getConditionEvaluationMode(), eventData, "craft", setting.getEvents().indexOf(eventData));
                 }
             }
         }
@@ -265,7 +330,7 @@ public class EventfulManager {
             MoveSetting setting = plugin.getMoveSetting();
             if (setting.getEvents() != null && !setting.getEvents().isEmpty()) {
                 for (EventSetting.EventData eventData : setting.getEvents()) {
-                    handleEvent(event, eventData.resolveConditions(), eventData.resolveActions(), eventData.getConditionEvaluationMode());
+                    handleEvent(event, eventData.resolveConditions(), eventData.resolveActions(), eventData.getConditionEvaluationMode(), eventData, "move", setting.getEvents().indexOf(eventData));
                 }
             }
         }
@@ -277,7 +342,7 @@ public class EventfulManager {
             PlayerDeathSetting setting = plugin.getPlayerDeathSetting();
             if (setting.getEvents() != null && !setting.getEvents().isEmpty()) {
                 for (EventSetting.EventData eventData : setting.getEvents()) {
-                    handleEvent(event, eventData.resolveConditions(), eventData.resolveActions(), eventData.getConditionEvaluationMode());
+                    handleEvent(event, eventData.resolveConditions(), eventData.resolveActions(), eventData.getConditionEvaluationMode(), eventData, "player_death", setting.getEvents().indexOf(eventData));
                 }
             }
         }
@@ -290,7 +355,7 @@ public class EventfulManager {
                 PlayerDamageSetting setting = plugin.getPlayerDamageSetting();
                 if (setting.getEvents() != null && !setting.getEvents().isEmpty()) {
                     for (EventSetting.EventData eventData : setting.getEvents()) {
-                        handleEvent(event, eventData.resolveConditions(), eventData.resolveActions(), eventData.getConditionEvaluationMode());
+                        handleEvent(event, eventData.resolveConditions(), eventData.resolveActions(), eventData.getConditionEvaluationMode(), eventData, "player_damage", setting.getEvents().indexOf(eventData));
                     }
                 }
             }
@@ -303,7 +368,7 @@ public class EventfulManager {
             PlayerSleepSetting setting = plugin.getPlayerSleepSetting();
             if (setting.getEvents() != null && !setting.getEvents().isEmpty()) {
                 for (EventSetting.EventData eventData : setting.getEvents()) {
-                    handleEvent(event, eventData.resolveConditions(), eventData.resolveActions(), eventData.getConditionEvaluationMode());
+                    handleEvent(event, eventData.resolveConditions(), eventData.resolveActions(), eventData.getConditionEvaluationMode(), eventData, "player_sleep", setting.getEvents().indexOf(eventData));
                 }
             }
         }
@@ -313,7 +378,7 @@ public class EventfulManager {
             PlayerSleepSetting setting = plugin.getPlayerSleepSetting();
             if (setting.getEvents() != null && !setting.getEvents().isEmpty()) {
                 for (EventSetting.EventData eventData : setting.getEvents()) {
-                    handleEvent(event, eventData.resolveConditions(), eventData.resolveActions(), eventData.getConditionEvaluationMode());
+                    handleEvent(event, eventData.resolveConditions(), eventData.resolveActions(), eventData.getConditionEvaluationMode(), eventData, "player_sleep", setting.getEvents().indexOf(eventData));
                 }
             }
         }
@@ -325,7 +390,7 @@ public class EventfulManager {
             ItemConsumeSetting setting = plugin.getItemConsumeSetting();
             if (setting.getEvents() != null && !setting.getEvents().isEmpty()) {
                 for (EventSetting.EventData eventData : setting.getEvents()) {
-                    handleEvent(event, eventData.resolveConditions(), eventData.resolveActions(), eventData.getConditionEvaluationMode());
+                    handleEvent(event, eventData.resolveConditions(), eventData.resolveActions(), eventData.getConditionEvaluationMode(), eventData, "item_consume", setting.getEvents().indexOf(eventData));
                 }
             }
         }
@@ -337,7 +402,7 @@ public class EventfulManager {
             ItemPickupSetting setting = plugin.getItemPickupSetting();
             if (setting.getEvents() != null && !setting.getEvents().isEmpty()) {
                 for (EventSetting.EventData eventData : setting.getEvents()) {
-                    handleEvent(event, eventData.resolveConditions(), eventData.resolveActions(), eventData.getConditionEvaluationMode());
+                    handleEvent(event, eventData.resolveConditions(), eventData.resolveActions(), eventData.getConditionEvaluationMode(), eventData, "item_pickup", setting.getEvents().indexOf(eventData));
                 }
             }
         }
@@ -349,7 +414,7 @@ public class EventfulManager {
             EntityInteractSetting setting = plugin.getEntityInteractSetting();
             if (setting.getEvents() != null && !setting.getEvents().isEmpty()) {
                 for (EventSetting.EventData eventData : setting.getEvents()) {
-                    handleEvent(event, eventData.resolveConditions(), eventData.resolveActions(), eventData.getConditionEvaluationMode());
+                    handleEvent(event, eventData.resolveConditions(), eventData.resolveActions(), eventData.getConditionEvaluationMode(), eventData, "entity_interact", setting.getEvents().indexOf(eventData));
                 }
             }
         }
@@ -361,7 +426,7 @@ public class EventfulManager {
             ItemEnchantSetting setting = plugin.getItemEnchantSetting();
             if (setting.getEvents() != null && !setting.getEvents().isEmpty()) {
                 for (EventSetting.EventData eventData : setting.getEvents()) {
-                    handleEvent(event, eventData.resolveConditions(), eventData.resolveActions(), eventData.getConditionEvaluationMode());
+                    handleEvent(event, eventData.resolveConditions(), eventData.resolveActions(), eventData.getConditionEvaluationMode(), eventData, "item_enchant", setting.getEvents().indexOf(eventData));
                 }
             }
         }
@@ -373,7 +438,7 @@ public class EventfulManager {
             ItemRepairSetting setting = plugin.getItemRepairSetting();
             if (setting.getEvents() != null && !setting.getEvents().isEmpty()) {
                 for (EventSetting.EventData eventData : setting.getEvents()) {
-                    handleEvent(event, eventData.resolveConditions(), eventData.resolveActions(), eventData.getConditionEvaluationMode());
+                    handleEvent(event, eventData.resolveConditions(), eventData.resolveActions(), eventData.getConditionEvaluationMode(), eventData, "item_repair", setting.getEvents().indexOf(eventData));
                 }
             }
         }
@@ -385,7 +450,7 @@ public class EventfulManager {
             ItemDropSetting setting = plugin.getItemDropSetting();
             if (setting.getEvents() != null && !setting.getEvents().isEmpty()) {
                 for (EventSetting.EventData eventData : setting.getEvents()) {
-                    handleEvent(event, eventData.resolveConditions(), eventData.resolveActions(), eventData.getConditionEvaluationMode());
+                    handleEvent(event, eventData.resolveConditions(), eventData.resolveActions(), eventData.getConditionEvaluationMode(), eventData, "item_drop", setting.getEvents().indexOf(eventData));
                 }
             }
         }

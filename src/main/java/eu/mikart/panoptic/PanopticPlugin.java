@@ -30,6 +30,7 @@ import eu.mikart.panoptic.config.event.PlayerLeaveSetting;
 import eu.mikart.panoptic.config.event.PlayerSleepSetting;
 import eu.mikart.panoptic.config.event.PlayerTeleportSetting;
 import eu.mikart.panoptic.config.timed.TimedEventsConfig;
+import eu.mikart.panoptic.integration.PanopticPlaceholderExpansion;
 import eu.mikart.panoptic.listener.EventfulManager;
 import eu.mikart.panoptic.timed.TimedEventsManager;
 import lombok.Getter;
@@ -113,6 +114,7 @@ public class PanopticPlugin extends JavaPlugin implements ConfigProvider {
     private boolean miniPlaceholdersEnabled = false;
     private EventfulManager eventfulManager;
     private TimedEventsManager timedEventsManager;
+    private PanopticPlaceholderExpansion placeholderExpansion;
     private Version version;
 
     @Override
@@ -124,6 +126,9 @@ public class PanopticPlugin extends JavaPlugin implements ConfigProvider {
 
         if (getSettings().isUsePlaceholderAPI() && Bukkit.getPluginManager().getPlugin("PlaceholderAPI") != null) {
             placeholderAPIEnabled = true;
+            placeholderExpansion = new PanopticPlaceholderExpansion(this);
+            placeholderExpansion.register();
+            getLogger().info("PlaceholderAPI integration enabled.");
         }
 
         if (getSettings().isUseMiniPlaceholders() && Bukkit.getPluginManager().getPlugin("MiniPlaceholders") != null) {
@@ -132,18 +137,21 @@ public class PanopticPlugin extends JavaPlugin implements ConfigProvider {
 
         eventfulManager = new EventfulManager(this);
         eventfulManager.initialize();
-        
+
         if (getSettings().isTimedEvents()) {
             timedEventsManager = new TimedEventsManager(this);
             timedEventsManager.initialize();
         }
-        
+
         PaperUniform uniform = PaperUniform.getInstance(this);
         uniform.register(PluginCommand.Type.create(this));
     }
 
     @Override
     public void onDisable() {
+        if (placeholderExpansion != null) {
+            placeholderExpansion.unregister();
+        }
         if (timedEventsManager != null) {
             timedEventsManager.shutdown();
         }
@@ -156,18 +164,18 @@ public class PanopticPlugin extends JavaPlugin implements ConfigProvider {
         loadConfig();
         eventfulManager.unregisterAll();
         eventfulManager.initialize();
-        
+
         // Reload timed events manager
         if (timedEventsManager != null) {
             timedEventsManager.shutdown();
             timedEventsManager = null;
         }
-        
+
         if (getSettings().isTimedEvents()) {
             timedEventsManager = new TimedEventsManager(this);
             timedEventsManager.initialize();
         }
-        
+
         getLogger().info("Panoptic plugin has been reloaded.");
     }
 
