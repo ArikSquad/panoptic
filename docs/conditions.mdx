@@ -1,0 +1,395 @@
+---
+title: Conditions
+---
+
+Conditions are the "if" statements of Panoptic. They let you create smart events that only trigger when specific requirements are met. Want to give rewards only to players in a certain world? Or maybe send different messages based on what time it is? Conditions make it all possible.
+
+## Basic Usage
+Conditions are defined as a list under the `conditions` key in your event configuration:
+
+```yaml
+conditions:
+  - type: world
+    value: "survival"
+  - type: sneaking
+```
+
+Some conditions need a `value` to specify what to check for, while others (like `sneaking`) work without any additional setup.
+
+## Condition Evaluation Modes
+
+By default, **all conditions must be true** for actions to run (AND logic). But you can change this behavior with the `conditionEvaluationMode` setting:
+
+### REQUIRE_ALL (Default)
+All conditions must be true. This is the standard AND logic.
+
+```yaml
+events:
+  - conditions:
+      - type: world
+        value: "survival"
+      - type: sneaking
+    conditionEvaluationMode: "REQUIRE_ALL"  # Optional - this is the default
+    actions:
+      - type: send_message
+        value: "You're sneaking in survival!"
+```
+
+### REQUIRE_ANY
+At least one condition must be true. This gives you OR logic.
+
+```yaml
+events:
+  - conditions:
+      - type: world
+        value: "survival"
+      - type: world
+        value: "creative"
+    conditionEvaluationMode: "REQUIRE_ANY"
+    actions:
+      - type: send_message
+        value: "Welcome to survival or creative mode!"
+```
+
+### REQUIRE_SINGLE
+Exactly one condition must be true. This is XOR logic - useful when you want mutually exclusive conditions.
+
+```yaml
+events:
+  - conditions:
+      - type: sneaking
+      - type: world
+        value: "pvp"
+    conditionEvaluationMode: "REQUIRE_SINGLE"
+    actions:
+      - type: send_message
+        value: "Either you're sneaking OR you're in PVP world (but not both)!"
+```
+
+### REQUIRE_NONE
+No conditions are required - actions always execute. Useful for events that should always trigger.
+
+```yaml
+events:
+  - conditions:
+      - type: world
+        value: "ignore_this"
+    conditionEvaluationMode: "REQUIRE_NONE"
+    actions:
+      - type: send_message
+        value: "This always runs regardless of conditions!"
+```
+
+## Cooldowns
+
+Prevent event spam and control frequency with cooldowns:
+
+### Per-Player Cooldown
+Each player has their own cooldown timer:
+
+```yaml
+events:
+  - conditions:
+      - type: block_type
+        value: "DIAMOND_ORE"
+    perPlayerCooldown: 60000  # 60 seconds per player
+    actions:
+      - type: send_message
+        value: "Diamond mining reward! (Once per minute per player)"
+```
+
+### Global Cooldown
+Affects all players - once triggered, no player can trigger it again until the cooldown expires:
+
+```yaml
+events:
+  - conditions:
+      - type: entity_type
+        value: "ENDER_DRAGON"
+    globalCooldown: 300000  # 5 minutes for everyone
+    actions:
+      - type: send_message
+        value: "Dragon slain! Server-wide celebration!"
+```
+
+### Combined Cooldowns
+Use both for fine-grained control:
+
+```yaml
+events:
+  - conditions:
+      - type: random
+        value: "0.01"  # 1% chance
+    perPlayerCooldown: 30000   # 30 seconds per player
+    globalCooldown: 5000       # 5 seconds globally
+    actions:
+      - type: send_message
+        value: "Rare event triggered!"
+```
+
+## Available Conditions
+
+### sneaking
+Checks if the player is currently sneaking (holding shift).
+
+```yaml
+- type: sneaking
+```
+
+**Real example**: Secret reward for sneaky players
+```yaml
+# In block_break.yml
+listen: true
+events:
+  - conditions:
+      - type: sneaking
+      - type: block_type
+        value: "DIAMOND_ORE"
+    actions:
+      - type: send_message
+        value: "<light_purple>Secret bonus for sneaky miners!"
+      - type: run_command_as_console
+        value: "give %player% diamond 2"
+```
+
+### world
+Checks if the event happened in a specific world.
+
+```yaml
+- type: world
+  value: "world_nether"
+```
+
+**Real example**: Nether-specific welcome message
+```yaml
+# In player_teleport.yml
+listen: true
+events:
+  - conditions:
+      - type: world
+        value: "world_nether"
+    actions:
+      - type: send_message
+        value: "<red>Welcome to the Nether! <gold>Be careful of the lava!"
+```
+
+### random
+Adds a chance element to your events. The value should be between 0.0 (never) and 1.0 (always).
+
+```yaml
+- type: random
+  value: "0.1"  # 10% chance
+```
+
+**Real example**: Random fishing rewards
+```yaml
+# In fish_catch.yml
+listen: true
+events:
+  - conditions:
+      - type: random
+        value: "0.05"  # 5% chance
+    actions:
+      - type: send_message
+        value: "<aqua><bold>🐟 RARE CATCH! <reset><yellow>You caught something special!"
+      - type: run_command_as_console
+        value: "give %player% enchanted_golden_apple 1"
+```
+
+### placeholder
+Checks PlaceholderAPI placeholders against specific values. Requires PlaceholderAPI to be installed.
+
+**Supported operators:**
+- `=` - equal to
+- `!=` - not equal to
+- `>` - greater than
+- `<` - less than
+- `>=` - greater than or equal to
+- `<=` - less than or equal to
+
+```yaml
+- type: placeholder
+  value: "%vault_eco_balance%>=1000"
+```
+
+**Real example**: VIP perks for wealthy players
+```yaml
+# In player_join.yml
+listen: true
+events:
+  - conditions:
+      - type: placeholder
+        value: "%vault_eco_balance%>=50000"
+    actions:
+      - type: send_message
+        value: "<gold><bold>VIP <reset><yellow>Welcome back, wealthy player!"
+      - type: run_command_as_console
+        value: "give %player% golden_apple 5"
+```
+
+### mini_placeholder
+Similar to placeholder but uses MiniPlaceholders instead. Requires MiniPlaceholders to be installed.
+
+```yaml
+- type: mini_placeholder
+  value: "%server_tps%>18.0"
+```
+
+### entity_type
+Checks the type of entity involved in the event. Mainly useful for damage and death events.
+
+```yaml
+- type: entity_type
+  value: "CREEPER"
+```
+
+**Real example**: Special message for creeper deaths
+```yaml
+# In player_death.yml
+listen: true
+events:
+  - conditions:
+      - type: entity_type
+        value: "CREEPER"
+    actions:
+      - type: send_message
+        value: "<green><bold>💥 BOOM! <reset><gray>That's what you get for hugging creepers!"
+```
+
+### block_location
+Checks if a block event happened at a specific location. Format: `world,x,y,z`
+
+```yaml
+- type: block_location
+  value: "world,100,64,200"
+```
+
+**Real example**: Protect a specific block
+```yaml
+# In block_break.yml
+listen: true
+events:
+  - conditions:
+      - type: block_location
+        value: "spawn,0,65,0"
+    actions:
+      - type: send_message
+        value: "<red>You cannot break the spawn monument!"
+      - type: cancel
+```
+
+### block_at_location
+Checks what type of block is at the player's current location.
+
+```yaml
+- type: block_at_location
+  value: "WATER"
+```
+
+**Real example**: Swimming detection
+```yaml
+# In move.yml
+listen: true
+events:
+  - conditions:
+      - type: block_at_location
+        value: "WATER"
+    actions:
+      - type: send_message
+        value: "<aqua>You're swimming! Don't forget to breathe!"
+```
+
+## Advanced Examples
+
+### Multi-World OR Logic
+Welcome players to any of several worlds:
+
+```yaml
+# In player_teleport.yml
+listen: true
+events:
+  - conditions:
+      - type: world
+        value: "survival"
+      - type: world
+        value: "creative"
+      - type: world
+        value: "adventure"
+    conditionEvaluationMode: "REQUIRE_ANY"
+    actions:
+      - type: send_message
+        value: "<green>Welcome to one of our main worlds!"
+```
+
+### Exclusive Rewards
+Reward either new players OR VIPs, but not both:
+
+```yaml
+# In player_join.yml
+listen: true
+events:
+  - conditions:
+      - type: placeholder
+        value: "%luckperms_has_permission_panoptic.newplayer%=false"
+      - type: placeholder
+        value: "%vault_eco_balance%>=10000"
+    conditionEvaluationMode: "REQUIRE_SINGLE"
+    perPlayerCooldown: 86400000  # 24 hours
+    actions:
+      - type: send_message
+        value: "<gold>Special reward for either new players OR rich players!"
+      - type: run_command_as_console
+        value: "give %player% diamond 5"
+```
+
+### Anti-Spam Mining Rewards
+Prevent players from spamming diamond mining for rewards:
+
+```yaml
+# In block_break.yml
+listen: true
+events:
+  - conditions:
+      - type: block_type
+        value: "DIAMOND_ORE"
+      - type: world
+        value: "mining"
+    perPlayerCooldown: 120000  # 2 minutes per player
+    globalCooldown: 10000      # 10 seconds globally
+    actions:
+      - type: send_message
+        value: "<gold>Mining bonus! <gray>(Available again in 2 minutes)"
+      - type: run_command_as_console
+        value: "give %player% emerald 3"
+```
+
+### Time-Based Events with Cooldowns
+Daily login rewards that only work once per day:
+
+```yaml
+# In player_join.yml
+listen: true
+events:
+  - conditions:
+      - type: placeholder
+        value: "%server_time_H%>=6"
+      - type: placeholder
+        value: "%server_time_H%<12"
+    conditionEvaluationMode: "REQUIRE_ALL"
+    perPlayerCooldown: 86400000  # 24 hours
+    actions:
+      - type: send_message
+        value: "<yellow>Good morning! Here's your daily reward!"
+      - type: run_command_as_console
+        value: "give %player% bread 32"
+```
+
+## Tips and Tricks
+
+- **Testing**: Use the `/panoptic reload` command to test your condition changes quickly
+- **Debugging**: Add temporary `send_message` actions to see when conditions are being met
+- **Performance**: Random conditions are very lightweight, so don't worry about using them frequently
+- **Cooldown Values**: Times are in milliseconds (1000 = 1 second, 60000 = 1 minute)
+- **Evaluation Modes**: REQUIRE_ANY is great for multi-world events, REQUIRE_SINGLE for exclusive rewards
+
+**Note**: The `placeholder` and `mini_placeholder` conditions might be unified in a future update since they work very similarly.

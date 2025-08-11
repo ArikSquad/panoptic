@@ -15,11 +15,13 @@ public class RunCommandAsPlayerAction implements Action {
 
     @Override
     public void execute(Event event) {
-        if (event instanceof PlayerEvent playerEvent) {
-            Player player = playerEvent.getPlayer();
-            String parsedCommand = ActionContextParser.parse(command, player, event);
-            player.performCommand(parsedCommand);
+        Player player = ripPlayerOffEvent(event);
+        if (player == null) {
+            return;
         }
+
+        String parsedCommand = ActionContextParser.parse(command, player, event);
+        player.performCommand(parsedCommand);
     }
 }
 

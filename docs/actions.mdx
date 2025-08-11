@@ -1,0 +1,184 @@
+---
+title: Actions
+description: Actions are the heart of Panoptic - they're what actually happens when your events trigger. Whether you want to send a message, run a command, or even cancel an event entirely, actions make it possible.
+---
+
+## Basic Usage
+Actions are defined as a list under the `actions` key in your event configuration:
+
+```yaml
+actions:
+  - type: send_message
+    value: "Hello %player%!"
+  - type: run_command_as_console
+    value: "give %player% diamond 1"
+```
+
+Some actions need a `value` field to specify what they should do, while others (like `cancel`) work without any additional configuration.
+
+## Placeholders and Context
+
+Most actions have access to information about what triggered them. You can use these placeholders in your action values:
+
+- `%player%` - The player's name
+- `%player_uuid%` - The player's unique ID
+- `%block_type%` - The type of block involved (for block events)
+- `%block_location%` - Where the block is located (format: `world,x,y,z`)
+- `%event_name%` - The name of the event that triggered this action
+
+**Example**: A mining reward system
+```yaml
+# In block_break.yml
+listen: true
+events:
+  - conditions:
+      - type: block_type
+        value: "DIAMOND_ORE"
+    actions:
+      - type: send_message
+        value: "<gold>Lucky find! You mined %block_type% at %block_location%"
+      - type: run_command_as_console
+        value: "give %player% emerald 5"
+```
+
+## Available Actions
+
+### send_message
+Sends a message directly to the player who triggered the event. Supports MiniMessage formatting for colors and styles.
+
+```yaml
+- type: send_message
+  value: "<green>Welcome back, %player%! <gray>You're in world: <yellow>%world%"
+```
+
+### run_command_as_player
+Executes a command as if the player typed it themselves. Useful for commands that need player context.
+
+```yaml
+- type: run_command_as_player
+  value: "spawn"
+```
+
+**Real example**: Auto-teleport players who fall into the void
+```yaml
+# In player_damage.yml
+listen: true
+events:
+  - conditions:
+      - type: entity_type
+        value: "VOID"
+    actions:
+      - type: send_message
+        value: "<red>Oops! Teleporting you to safety..."
+      - type: run_command_as_player
+        value: "spawn"
+```
+
+### run_command_as_console
+Runs a command from the console with full administrative privileges. Perfect for giving items, changing permissions, or running other admin commands.
+
+```yaml
+- type: run_command_as_console
+  value: "give %player% golden_apple 1"
+```
+
+**Real example**: Reward system for first-time joiners
+```yaml
+# In player_join.yml
+listen: true
+events:
+  - conditions:
+      - type: placeholder
+        value: "%luckperms_has_permission_panoptic.newplayer%=false"
+    actions:
+      - type: send_message
+        value: "<gold>Welcome to our server! Here's a starter kit!"
+      - type: run_command_as_console
+        value: "give %player% bread 10"
+      - type: run_command_as_console
+        value: "give %player% wooden_sword 1"
+      - type: run_command_as_console
+        value: "lp user %player% permission set panoptic.newplayer true"
+```
+
+### cancel
+Prevents the original event from happening. For example, you can stop a player from breaking certain blocks or joining under specific conditions.
+
+```yaml
+- type: cancel
+```
+
+**Real example**: Protect spawners in certain worlds
+```yaml
+# In block_break.yml
+listen: true
+events:
+  - conditions:
+      - type: block_type
+        value: "SPAWNER"
+      - type: world
+        value: "survival"
+    actions:
+      - type: send_message
+        value: "<red>You cannot break spawners in the survival world!"
+      - type: cancel
+```
+
+## Advanced Examples
+
+### Random Reward System
+Give players a chance at rare rewards when mining:
+
+```yaml
+# In block_break.yml
+listen: true
+events:
+  - conditions:
+      - type: block_type
+        value: "STONE"
+      - type: random
+        value: "0.001"  # 0.1% chance
+    actions:
+      - type: send_message
+        value: "<gold><bold>✦ RARE DROP! <reset><yellow>You found a hidden treasure!"
+      - type: run_command_as_console
+        value: "give %player% diamond 3"
+```
+
+### Smart Welcome Messages
+Different welcome messages based on the time of day:
+
+```yaml
+# In player_join.yml
+listen: true
+events:
+  - conditions:
+      - type: placeholder
+        value: "%server_time_H%>=6"
+      - type: placeholder
+        value: "%server_time_H%<12"
+    actions:
+      - type: send_message
+        value: "<yellow>Good morning, %player%! ☀️"
+  - conditions:
+      - type: placeholder
+        value: "%server_time_H%>=12"
+      - type: placeholder
+        value: "%server_time_H%<18"
+    actions:
+      - type: send_message
+        value: "<gold>Good afternoon, %player%! 🌤️"
+  - conditions:
+      - type: placeholder
+        value: "%server_time_H%>=18"
+    actions:
+      - type: send_message
+        value: "<blue>Good evening, %player%! 🌙"
+```
+
+## Tips and Tricks
+
+- **MiniMessage Format**: Use `<color>` tags like `<red>`, `<green>`, `<bold>`, `<italic>` for formatting
+- **Multiple Actions**: You can have as many actions as you want in a single event
+- **Order Matters**: Actions execute in the order you list them
+- **Testing**: Use the `/panoptic reload` command to test your changes without restarting the server

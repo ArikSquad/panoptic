@@ -117,6 +117,9 @@ public class EventfulManager {
 
     public void handleEvent(Event event, List<Condition> conditions, List<Action> actions, ConditionEvaluationMode evaluationMode, EventSetting.EventData eventData, String eventType, int eventIndex) {
         Player player = getPlayerFromEvent(event);
+        if (player == null) {
+            return;
+        }
 
         if (cooldownManager.isOnCooldown(event, eventData, eventType, eventIndex, player)) {
             return;
@@ -132,6 +135,10 @@ public class EventfulManager {
     private boolean evaluateConditions(List<Condition> conditions, Event event, ConditionEvaluationMode evaluationMode) {
         if (conditions == null || conditions.isEmpty()) {
             return true;
+        }
+
+        if (evaluationMode == null) {
+            return conditions.stream().allMatch(cond -> cond.evaluate(event));
         }
 
         return switch (evaluationMode) {
@@ -151,6 +158,7 @@ public class EventfulManager {
         return cooldownManager.getRemainingCooldown(eventType, eventIndex, playerId, eventData);
     }
 
+    // this is different from BukkitEventParser#getPlayerFromEvent, why? well nobody knows.
     private Player getPlayerFromEvent(Event event) {
         if (event instanceof PlayerEvent playerEvent) {
             return playerEvent.getPlayer();

@@ -1,0 +1,48 @@
+plugins {
+    id 'java'
+    id 'com.gradleup.shadow' version '9.0.1'
+}
+
+group = 'eu.mikart'
+version = '1.2.0'
+
+sourceCompatibility = 21
+
+tasks.withType(JavaCompile) {
+    options.encoding = 'UTF-8'
+}
+
+repositories {
+    mavenCentral()
+    maven { url 'https://repo.papermc.io/repository/maven-public/' }
+    maven { url 'https://repo.william278.net/releases' }
+    maven { url 'https://jitpack.io' }
+    maven { url 'https://repo.extendedclip.com/content/repositories/placeholderapi/' }
+}
+
+dependencies {
+    implementation 'net.william278:desertwell:2.0.4'
+    implementation 'net.william278.uniform:uniform-paper:1.3.4'
+    implementation 'de.exlll:configlib-yaml:4.6.1'
+    implementation 'com.googlecode.aviator:aviator:5.4.3'
+    implementation 'org.openjdk.nashorn:nashorn-core:15.6'
+    compileOnly 'io.papermc.paper:paper-api:1.21.4-R0.1-SNAPSHOT'
+    compileOnly 'org.projectlombok:lombok:1.18.38'
+    annotationProcessor 'org.projectlombok:lombok:1.18.38'
+    compileOnly 'me.clip:placeholderapi:2.11.6'
+    compileOnly 'io.github.miniplaceholders:miniplaceholders-api:2.3.0'
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.12.2'
+}
+
+shadowJar {
+    archiveBaseName.set('Panoptic-Paper')
+    archiveVersion.set(version)
+    archiveClassifier.set('')
+    // minimize()
+    relocate 'jdk.nashorn', 'eu.mikart.shaded.nashorn'
+    relocate 'org.openjdk.nashorn', 'eu.mikart.shaded.nashorn'
+}
+
+test {
+    // useJUnitPlatform()
+}
