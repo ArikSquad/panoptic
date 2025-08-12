@@ -5,12 +5,17 @@ import eu.mikart.panoptic.event.action.Action;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.graalvm.polyglot.Context;
+import org.graalvm.polyglot.Engine;
 import org.graalvm.polyglot.Value;
 
 import java.util.HashMap;
 import java.util.Map;
 
 public record JavaScriptAction(String script) implements Action {
+
+    private static final Engine ENGINE = Engine.newBuilder()
+            .option("engine.WarnInterpreterOnly", "false")
+            .build();
 
     @Override
     public void execute(Event event) {
@@ -21,6 +26,7 @@ public record JavaScriptAction(String script) implements Action {
         if (player != null) ctx.put("player", player);
 
         try (Context jsContext = Context.newBuilder("js")
+                .engine(ENGINE)
                 .allowAllAccess(true)
                 .build()) {
 
