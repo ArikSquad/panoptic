@@ -25,7 +25,8 @@ dependencies {
     implementation 'net.william278.uniform:uniform-paper:1.3.4'
     implementation 'de.exlll:configlib-yaml:4.6.1'
     implementation 'com.googlecode.aviator:aviator:5.4.3'
-    implementation 'org.openjdk.nashorn:nashorn-core:15.6'
+    implementation "org.graalvm.polyglot:polyglot:24.1.1"
+    implementation "org.graalvm.js:js-scriptengine:24.1.1"
     compileOnly 'io.papermc.paper:paper-api:1.21.4-R0.1-SNAPSHOT'
     compileOnly 'org.projectlombok:lombok:1.18.38'
     annotationProcessor 'org.projectlombok:lombok:1.18.38'
@@ -35,13 +36,15 @@ dependencies {
 }
 
 shadowJar {
-    archiveBaseName.set('Panoptic-Paper')
+    archiveBaseName.set("Panoptic-Paper")
     archiveVersion.set(version)
-    archiveClassifier.set('')
-    // minimize()
-    relocate 'jdk.nashorn', 'eu.mikart.shaded.nashorn'
-    relocate 'org.openjdk.nashorn', 'eu.mikart.shaded.nashorn'
+    archiveClassifier.set("")
+    exclude('META-INF/maven/**')
+    exclude('**/*.pom')
+    relocate("org.graalvm", "eu.mikart.panoptic.shaded.graalvm")
+    relocate("com.oracle.truffle", "eu.mikart.panoptic.shaded.truffle")
 }
+
 
 test {
     // useJUnitPlatform()

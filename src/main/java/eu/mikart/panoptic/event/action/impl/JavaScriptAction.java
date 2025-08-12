@@ -4,20 +4,13 @@ import eu.mikart.panoptic.PanopticPlugin;
 import eu.mikart.panoptic.event.action.Action;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
+import org.graalvm.polyglot.Context;
+import org.graalvm.polyglot.Value;
 
-import javax.script.ScriptEngine;
-import javax.script.ScriptEngineManager;
-import javax.script.SimpleBindings;
 import java.util.HashMap;
 import java.util.Map;
 
-public class JavaScriptAction implements Action {
-    private final String script;
-    private static final ScriptEngine engine = new ScriptEngineManager().getEngineByName("nashorn");
-
-    public JavaScriptAction(String script) {
-        this.script = script;
-    }
+public record JavaScriptAction(String script) implements Action {
 
     @Override
     public void execute(Event event) {
@@ -26,10 +19,20 @@ public class JavaScriptAction implements Action {
         ctx.put("plugin", PanopticPlugin.getInstance());
         ctx.put("event", event);
         if (player != null) ctx.put("player", player);
-        try {
-            engine.eval(script, new SimpleBindings(ctx));
+
+        try (Context jsContext = Context.newBuilder("js")
+                .allowAllAccess(true)
+                .build()) {
+
+            Value bindings = jsContext.getBindings("js");
+            for (Map.Entry<String, Object> entry : ctx.entrySet()) {
+                bindings.putMember(entry.getKey(), entry.getValue());
+            }
+
+            jsContext.eval("js", script);
         } catch (Exception e) {
             PanopticPlugin.getInstance().getLogger().warning("[JavaScriptAction] Script error: " + e);
         }
     }
+
 }
