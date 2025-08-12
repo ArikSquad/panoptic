@@ -7,6 +7,7 @@ import org.jetbrains.annotations.NotNull;
 
 import de.exlll.configlib.Comment;
 import de.exlll.configlib.Configuration;
+import eu.mikart.panoptic.config.ConditionEvaluationMode;
 import eu.mikart.panoptic.command.PluginCommand;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -21,7 +22,7 @@ public class Settings {
             ┃       Panoptic Config        ┃
             ┃    Developed by ArikSquad    ┃
             ┣━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
-            ┗╸ Documentation: No Documentation Yet""";
+            ┗╸ Documentation: https://www.mikart.eu/docs/panoptic""";
 
     private boolean debug = false;
     private boolean usePlaceholderAPI = true;

@@ -5,6 +5,7 @@ import java.util.List;
 
 import de.exlll.configlib.Comment;
 import de.exlll.configlib.Configuration;
+import eu.mikart.panoptic.config.ConditionEvaluationMode;
 import lombok.Getter;
 
 /**

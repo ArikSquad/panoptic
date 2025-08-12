@@ -1,0 +1,298 @@
+---
+title: Timed Events
+description: Timed events let you schedule commands to run automatically on your server. Whether you want to send reminders every hour, restart the server at 3 AM, or run maintenance tasks on weekends, timed events have you covered.
+---
+
+## Getting Started
+
+First, make sure timed events are enabled in your main config. In `plugins/panoptic/config.yml`:
+
+```yaml
+timed_events: true
+```
+
+Then create your timed events configuration in `plugins/panoptic/timed_events.yml`:
+
+```yaml
+events:
+  - name: "hourly_reminder"
+    schedule: "0 * * * *"
+    schedule_type: "CRON"
+    commands:
+      - "broadcast &6⏰ Remember to vote for the server!"
+    async: false
+    enabled: true
+```
+
+## Schedule Types
+
+Panoptic supports three different ways to schedule your events:
+
+### CRON Expressions
+The most flexible option - perfect for complex schedules like "every Tuesday at 2:30 AM" or "every 15 minutes during business hours".
+
+```yaml
+schedule_type: "CRON"
+schedule: "30 2 * * 2"  # Every Tuesday at 2:30 AM
+```
+
+**Common CRON patterns:**
+- `0 * * * *` - Every hour on the hour
+- `*/15 * * * *` - Every 15 minutes
+- `0 0 * * *` - Daily at midnight
+- `0 6 * * 1` - Every Monday at 6 AM
+- `0 12 * * 0,6` - Weekends at noon
+
+### INTERVAL
+Simple repeating timers based on Minecraft ticks (20 ticks = 1 second).
+
+```yaml
+schedule_type: "INTERVAL"
+schedule: "1200"  # Every 60 seconds (1200 ticks)
+```
+
+**Common intervals:**
+- `20` - Every second
+- `1200` - Every minute
+- `72000` - Every hour
+- `1728000` - Every day
+
+### ONE_TIME
+Run something once after a delay.
+
+```yaml
+schedule_type: "ONE_TIME"
+schedule: "6000"  # Run once after 5 minutes (6000 ticks)
+```
+
+## Configuration Options
+
+### name
+A unique identifier for your event. Make it descriptive!
+
+```yaml
+name: "daily_backup_reminder"
+```
+
+### commands
+List of commands to run. These are executed as console commands, so no `/` prefix needed.
+
+```yaml
+commands:
+  - "say Starting server backup..."
+  - "save-all"
+  - "say Backup complete!"
+```
+
+### async
+Whether to run the commands asynchronously. Set to `true` for heavy operations, `false` for most things.
+
+```yaml
+async: false  # Default - safe for most commands
+async: true   # Use for file operations or long-running tasks
+```
+
+### enabled
+Easy way to temporarily disable an event without deleting it.
+
+```yaml
+enabled: true   # Event will run
+enabled: false  # Event is disabled
+```
+
+## Real-World Examples
+
+### Server Maintenance
+Restart the server every night at 4 AM:
+
+```yaml
+- name: "nightly_restart"
+  schedule: "0 4 * * *"
+  schedule_type: "CRON"
+  commands:
+    - "broadcast &c⚠️ Server restart in 5 minutes!"
+    - "broadcast &c⚠️ Save your work and find a safe place!"
+  async: false
+  enabled: true
+```
+
+### Hourly Reminders
+Keep your community engaged:
+
+```yaml
+- name: "vote_reminder"
+  schedule: "0 * * * *"
+  schedule_type: "CRON"
+  commands:
+    - "broadcast &6🗳️ Don't forget to vote! &e/vote"
+    - "broadcast &6💎 Voters get special rewards!"
+  async: false
+  enabled: true
+```
+
+### Economy Reset
+Reset the auction house every Sunday:
+
+```yaml
+- name: "weekly_ah_reset"
+  schedule: "0 0 * * 0"
+  schedule_type: "CRON"
+  commands:
+    - "broadcast &e📦 Auction house maintenance starting..."
+    - "ah clear expired"
+    - "broadcast &a✅ Auction house cleaned up!"
+  async: true
+  enabled: true
+```
+
+### Random Events
+Create excitement with random rewards:
+
+```yaml
+- name: "random_drop_party"
+  schedule: "7200"  # Every 6 minutes
+  schedule_type: "INTERVAL"
+  commands:
+    - "execute if predicate minecraft:random_chance{chance:0.1} run broadcast &d🎉 SURPRISE! Drop party at spawn!"
+    - "execute if predicate minecraft:random_chance{chance:0.1} run tp @a spawn"
+  async: false
+  enabled: true
+```
+
+### Performance Monitoring
+Keep an eye on server health:
+
+```yaml
+- name: "performance_check"
+  schedule: "*/5 * * * *"  # Every 5 minutes
+  schedule_type: "CRON"
+  commands:
+    - "execute if score tps server.tps < 18 run broadcast &c⚠️ Server TPS is low!"
+    - "execute if score tps server.tps < 15 run say Investigating performance issues..."
+  async: false
+  enabled: true
+```
+
+### Backup Automation
+Protect your world with regular backups:
+
+```yaml
+- name: "world_backup"
+  schedule: "0 */6 * * *"  # Every 6 hours
+  schedule_type: "CRON"
+  commands:
+    - "save-all flush"
+    - "say Creating world backup..."
+    - "backup create world"
+  async: true
+  enabled: true
+```
+
+## Advanced Scheduling
+
+### Business Hours Only
+Run events only during peak times:
+
+```yaml
+- name: "peak_hours_event"
+  schedule: "0 18-22 * * 1-5"  # 6-10 PM on weekdays
+  schedule_type: "CRON"
+  commands:
+    - "broadcast &6⭐ Peak hours bonus XP is active!"
+  async: false
+  enabled: true
+```
+
+### Holiday Events
+Special events for holidays:
+
+```yaml
+- name: "christmas_event"
+  schedule: "0 12 25 12 *"  # Christmas Day at noon
+  schedule_type: "CRON"
+  commands:
+    - "broadcast &c🎄 Merry Christmas! Special gifts await!"
+    - "give @a minecraft:diamond 25"
+  async: false
+  enabled: true
+```
+
+### Multi-Step Processes
+Complex operations with delays:
+
+```yaml
+- name: "server_restart_warning"
+  schedule: "0 3 * * *"  # 3 AM daily
+  schedule_type: "CRON"
+  commands:
+    - "broadcast &c⚠️ Server restart in 10 minutes!"
+  async: false
+  enabled: true
+
+- name: "server_restart_final"
+  schedule: "10 3 * * *"  # 3:10 AM daily
+  schedule_type: "CRON"
+  commands:
+    - "broadcast &c🔄 Restarting server now!"
+    - "restart"
+  async: false
+  enabled: true
+```
+
+## Tips and Best Practices
+
+### Performance
+- Use `async: true` for commands that might take time (backups, file operations)
+- Avoid running heavy commands too frequently
+- Test your timings on a development server first
+
+### Reliability
+- Always include user-friendly messages so players know what's happening
+- Give warnings before disruptive actions (restarts, teleports)
+- Use `enabled: false` to quickly disable problematic events
+
+### Debugging
+- Check server logs for any command execution errors
+- Use `/panoptic reload` to apply changes without restarting
+- Start with longer intervals while testing, then adjust
+
+### CRON Expression Help
+Need help with CRON expressions? Here's a quick reference:
+
+```
+ ┌───────────── minute (0 - 59)
+ │ ┌───────────── hour (0 - 23)
+ │ │ ┌───────────── day of month (1 - 31)
+ │ │ │ ┌───────────── month (1 - 12)
+ │ │ │ │ ┌───────────── day of week (0 - 6) (Sunday = 0)
+ │ │ │ │ │
+ * * * * *
+```
+
+**Special characters:**
+- `*` - Any value
+- `/` - Step values (e.g., `*/5` = every 5)
+- `-` - Range (e.g., `1-5` = Monday to Friday)
+- `,` - List (e.g., `1,3,5` = Monday, Wednesday, Friday)
+
+## Troubleshooting
+
+### Event Not Running
+1. Check that `timed_events: true` in your main config
+2. Verify the CRON expression is valid
+3. Make sure `enabled: true` for the event
+4. Check server logs for error messages
+
+### Commands Not Working
+1. Test commands manually in the server console first
+2. Remember: no `/` prefix needed for timed event commands
+3. Use `async: true` for commands that might hang
+4. Check if commands require specific permissions
+
+### Performance Issues
+1. Reduce frequency of resource-intensive events
+2. Use `async: true` for heavy operations
+3. Avoid overlapping events that might conflict
+4. Monitor server logs for warnings
+
+That's the power of timed events! They're perfect for automating routine tasks and keeping your server running smoothly. Start simple with basic reminders, then gradually add more complex automation as you get comfortable with the system.

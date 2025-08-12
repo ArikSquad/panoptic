@@ -1,5 +1,5 @@
 name: Panoptic
-version: ${project.version}
+version: 1.2.0
 main: eu.mikart.panoptic.PanopticPlugin
 api-version: '1.21.1'
 dependencies:

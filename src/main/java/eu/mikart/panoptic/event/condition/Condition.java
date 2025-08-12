@@ -1,5 +1,6 @@
 package eu.mikart.panoptic.event.condition;
 
+import eu.mikart.panoptic.util.BukkitEventParser;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.event.block.BlockBreakEvent;
@@ -14,23 +15,7 @@ public interface Condition {
 
     @Nullable
     default Player ripPlayerOffEvent(Event event) {
-        if (event instanceof PlayerEvent playerEvent) {
-            return playerEvent.getPlayer();
-        }
-
-        if (event instanceof EntityEvent entityEvent) {
-            if (entityEvent.getEntity() instanceof Player player) {
-                return player;
-            }
-        }
-
-        if (event instanceof BlockPlaceEvent blockPlaceEvent) {
-            return blockPlaceEvent.getPlayer();
-        }
-
-        if (event instanceof BlockBreakEvent blockBreakEvent) {
-            return blockBreakEvent.getPlayer();
-        }
-        return null;
+        return BukkitEventParser.getPlayerFromEvent(event);
     }
+
 }

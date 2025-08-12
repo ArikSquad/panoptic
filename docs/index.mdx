@@ -1,0 +1,79 @@
+---
+title: Introduction
+description: Panoptic is a powerful and flexible event management plugin for Minecraft servers.
+---
+
+Whether you want to welcome new players with custom messages, reward players for certain achievements, or run maintenance tasks on a schedule, Panoptic has you covered.
+
+## What can you do with Panoptic?
+
+- **React to player events**: Send messages, run commands, or cancel actions when players join, break blocks, craft items, and much more
+- **Schedule automated tasks**: Set up recurring events using cron expressions or simple intervals
+- **Create conditional logic**: Use placeholders, check player stats, or add random chances to make your events dynamic
+- **Control event frequency**: Set cooldowns to prevent spam and manage how often events trigger
+- **Integrate with other plugins**: Works seamlessly with PlaceholderAPI and MiniPlaceholders
+
+## Getting Started
+
+### Building from Source
+First, clone the [repository](https://github.com/ArikSquad/panoptic) and build the project:
+```bash
+git clone https://github.com/ArikSquad/panoptic.git
+cd panoptic
+mvn clean install
+```
+
+### Installation
+1. Take the JAR file from the `target` directory and place it in your server's `plugins` folder
+2. Start your server - Panoptic will create a `panoptic` folder in your plugins directory
+3. Inside this folder, you'll find an `events` directory where all your event configurations live
+
+### Your First Event
+Let's create a simple welcome message for new players. Create a file called `player_join.yml` in the `plugins/panoptic/events/` directory:
+
+```yaml
+listen: true
+events:
+  - conditions: []
+    actions:
+      - type: send_message
+        value: "Welcome to our server, %player%! Enjoy your stay!"
+```
+
+That's it! Now every time a player joins, they'll see a personalized welcome message.
+
+## Configuration Structure
+
+All events follow the same basic structure:
+- **listen**: Whether this event type should be processed
+- **events**: A list of event configurations, each with conditions and actions
+
+Each event can have:
+- **conditions**: Requirements that must be met for the actions to run
+- **actions**: What should happen when the conditions are satisfied
+- **conditionEvaluationMode**: How multiple conditions should work together (AND, OR, XOR)
+- **perPlayerCooldown**: Minimum time between triggers for each individual player (in milliseconds)
+- **globalCooldown**: Minimum time between triggers across all players (in milliseconds)
+
+### Advanced Event Example
+Here's a more sophisticated event that shows off some advanced features:
+
+```yaml
+listen: true
+events:
+  - conditions:
+      - type: block_type
+        value: "DIAMOND_ORE"
+      - type: world
+        value: "mining"
+    conditionEvaluationMode: "REQUIRE_ALL"
+    perPlayerCooldown: 30000  # 30 seconds per player
+    globalCooldown: 5000      # 5 seconds globally
+    actions:
+      - type: send_message
+        value: "&6Diamond found! Next reward available in 30 seconds."
+      - type: run_command_as_console
+        value: "give %player% emerald 2"
+```
+
+Ready to learn more? Check out the documentation for [Actions](/actions), [Conditions](/conditions), and [Timed Events](/timed-events) to see what's possible.
