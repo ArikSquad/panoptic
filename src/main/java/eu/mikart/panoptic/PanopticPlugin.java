@@ -33,7 +33,6 @@ import eu.mikart.panoptic.config.timed.TimedEventsConfig;
 import eu.mikart.panoptic.integration.PanopticPlaceholderExpansion;
 import eu.mikart.panoptic.listener.EventfulManager;
 import eu.mikart.panoptic.timed.TimedEventsManager;
-import eu.mikart.panoptic.script.AviatorScriptEngine;
 import lombok.Getter;
 import lombok.Setter;
 import net.william278.desertwell.util.Version;
@@ -150,7 +149,6 @@ public class PanopticPlugin extends JavaPlugin implements ConfigProvider {
 
     @Override
     public void onDisable() {
-        AviatorScriptEngine.clearCaches();
         if (placeholderExpansion != null) {
             placeholderExpansion.unregister();
         }
@@ -164,7 +162,6 @@ public class PanopticPlugin extends JavaPlugin implements ConfigProvider {
     public void reload() {
         getLogger().info("Reloading Panoptic plugin...");
 
-        AviatorScriptEngine.clearCaches();
         loadConfig();
         eventfulManager.unregisterAll();
         eventfulManager.initialize();

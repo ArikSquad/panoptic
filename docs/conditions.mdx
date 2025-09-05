@@ -327,6 +327,27 @@ Accepts a single block material or a list; matches if any listed material matche
     - ANCIENT_DEBRIS
 ```
 
+### javascript
+Evaluate a JavaScript expression or script using GraalVM. The following bindings are available:
+- plugin: PanopticPlugin instance
+- event: the current Bukkit Event
+- player: the Player (if resolvable from the event)
+
+A script is considered true if it returns:
+- a boolean true
+- a non-zero number
+- a non-empty string
+- any other non-null value
+
+```yaml
+- type: script
+  value: |
+    // Example: only allow in survival world and when sneaking
+    event.getPlayer() != null &&
+    event.getPlayer().getWorld().getName() === 'survival' &&
+    event.getPlayer().isSneaking()
+```
+
 ## Advanced Examples
 
 ### Multi-World OR Logic
