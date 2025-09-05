@@ -238,9 +238,19 @@ Similar to placeholder but uses MiniPlaceholders instead. Requires MiniPlacehold
 ### entity_type
 Checks the type of entity involved in the event. Mainly useful for damage and death events.
 
+Accepts a single entity type or a list; matches if any listed type matches.
+
 ```yaml
+# Single
 - type: entity_type
   value: "CREEPER"
+
+# List
+- type: entity_type
+  value:
+    - CREEPER
+    - ZOMBIE
+    - SKELETON
 ```
 
 **Real example**: Special message for creeper deaths
@@ -297,6 +307,24 @@ events:
     actions:
       - type: send_message
         value: "<aqua>You're swimming! Don't forget to breathe!"
+```
+
+### block_type
+Checks the type of block involved in the event (e.g., in block break/place events).
+
+Accepts a single block material or a list; matches if any listed material matches.
+
+```yaml
+# Single
+- type: block_type
+  value: "DIAMOND_ORE"
+
+# List
+- type: block_type
+  value:
+    - DIAMOND_ORE
+    - GOLD_ORE
+    - ANCIENT_DEBRIS
 ```
 
 ## Advanced Examples

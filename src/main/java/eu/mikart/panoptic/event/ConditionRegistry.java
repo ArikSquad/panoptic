@@ -1,6 +1,7 @@
 package eu.mikart.panoptic.event;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
@@ -8,6 +9,7 @@ import eu.mikart.panoptic.event.condition.Condition;
 import eu.mikart.panoptic.event.condition.ConditionData;
 import eu.mikart.panoptic.event.condition.impl.*;
 import eu.mikart.panoptic.event.condition.params.DoubleConditionParams;
+import eu.mikart.panoptic.event.condition.params.ListStringConditionParams;
 import eu.mikart.panoptic.event.condition.params.StringConditionParams;
 
 /**
@@ -24,7 +26,18 @@ public class ConditionRegistry {
         register("sneaking", data -> new SneakingCondition());
         register("placeholder", data -> new PlaceholderCondition(((StringConditionParams) data.params()).value()));
         register("miniplaceholder", data -> new MiniPlaceholderCondition(((StringConditionParams) data.params()).value()));
-        register("entity_type", data -> new EntityTypeCondition(((StringConditionParams) data.params()).value()));
+        register("entity_type", data -> {
+            if (data.params() instanceof ListStringConditionParams(List<String> values)) {
+                return new EntityTypeCondition(values);
+            }
+            return new EntityTypeCondition(((StringConditionParams) data.params()).value());
+        });
+        register("block_type", data -> {
+            if (data.params() instanceof ListStringConditionParams(List<String> values)) {
+                return new BlockTypeCondition(values);
+            }
+            return new BlockTypeCondition(((StringConditionParams) data.params()).value());
+        });
         register("random", data -> new RandomCondition(((DoubleConditionParams) data.params()).value()));
         register("block_location", data -> new BlockLocationCondition(((StringConditionParams) data.params()).value()));
         register("block_at_location", data -> new BlockAtLocationCondition(((StringConditionParams) data.params()).value()));
@@ -55,4 +68,3 @@ public class ConditionRegistry {
         return factory.apply(data);
     }
 }
-
