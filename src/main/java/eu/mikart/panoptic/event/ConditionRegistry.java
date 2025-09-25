@@ -38,6 +38,12 @@ public class ConditionRegistry {
             }
             return new BlockTypeCondition(((StringConditionParams) data.params()).value());
         });
+		register("damage_source", data -> {
+			if (data.params() instanceof ListStringConditionParams(List<String> values)) {
+				return new DamageSourceCondition(values);
+			}
+			return new DamageSourceCondition(((StringConditionParams) data.params()).value());
+		});
         register("random", data -> new RandomCondition(((DoubleConditionParams) data.params()).value()));
         register("block_location", data -> new BlockLocationCondition(((StringConditionParams) data.params()).value()));
         register("block_at_location", data -> new BlockAtLocationCondition(((StringConditionParams) data.params()).value()));
