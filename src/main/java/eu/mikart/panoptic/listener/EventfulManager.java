@@ -67,6 +67,7 @@ public class EventfulManager {
     }
 
     public void initialize() {
+		// for now this is fine I guess
         if (plugin.getBlockBreakSetting().isListen())
             Bukkit.getPluginManager().registerEvents(new BlockBreakListener(), plugin);
         if (plugin.getBlockPlaceSetting().isListen())
@@ -108,7 +109,7 @@ public class EventfulManager {
         if (plugin.getItemDropSetting().isListen())
             Bukkit.getPluginManager().registerEvents(new ItemDropListener(), plugin);
 
-        plugin.getLogger().info("EventfulManager initialized and listeners registered.");
+        plugin.debug("Listeners have been registered.");
     }
 
     public void unregisterAll() {

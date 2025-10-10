@@ -33,14 +33,14 @@ public class ConditionRegistry {
             return new EntityTypeCondition(((StringConditionParams) data.params()).value());
         });
         register("block_type", data -> {
-            if (data.params() instanceof ListStringConditionParams(List<String> values)) {
-                return new BlockTypeCondition(values);
+            if (data.params() instanceof ListStringConditionParams(List<String> value)) {
+                return new BlockTypeCondition(value);
             }
             return new BlockTypeCondition(((StringConditionParams) data.params()).value());
         });
 		register("damage_source", data -> {
-			if (data.params() instanceof ListStringConditionParams(List<String> values)) {
-				return new DamageSourceCondition(values);
+			if (data.params() instanceof ListStringConditionParams(List<String> value)) {
+				return new DamageSourceCondition(value);
 			}
 			return new DamageSourceCondition(((StringConditionParams) data.params()).value());
 		});
@@ -72,5 +72,17 @@ public class ConditionRegistry {
         Function<ConditionData, Condition> factory = registry.get(data.type().toLowerCase());
         if (factory == null) throw new IllegalArgumentException("Unknown condition type: " + data.type());
         return factory.apply(data);
+    }
+
+    public static boolean allowsLists(String type) {
+        Function<ConditionData, Condition> factory = registry.get(type.toLowerCase());
+        if (factory == null) return false;
+        ConditionData dummy = new ConditionData(type, new ListStringConditionParams(List.of("dummy")));
+        try {
+            Condition cond = factory.apply(dummy);
+            return cond != null && cond.allowsLists();
+        } catch (Exception e) {
+            return false;
+        }
     }
 }

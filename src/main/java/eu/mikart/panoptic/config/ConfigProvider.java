@@ -35,14 +35,14 @@ import eu.mikart.panoptic.config.event.PlayerSleepSetting;
 import eu.mikart.panoptic.config.event.PlayerTeleportSetting;
 import eu.mikart.panoptic.config.timed.TimedEventsConfig;
 import eu.mikart.panoptic.event.action.value.ActionValue;
-import eu.mikart.panoptic.event.condition.params.ConditionParams;
+import eu.mikart.panoptic.event.condition.ConditionData;
 
 public interface ConfigProvider {
 
     @NotNull
     YamlConfigurationProperties.Builder<?> YAML_CONFIGURATION_PROPERTIES = YamlConfigurationProperties.newBuilder()
             .addSerializer(Color.class, new ColorSerializer())
-            .addSerializer(ConditionParams.class, new ConditionParamsSerializer())
+            .addSerializer(ConditionData.class, new ConditionDataSerializer())
             .addSerializer(ActionValue.class, new ActionValueSerializer())
             .addPostProcessor(ConfigurationElementFilter.byPostProcessKey("lowercase"), (String value) -> value.toLowerCase())
             .charset(StandardCharsets.UTF_8)
